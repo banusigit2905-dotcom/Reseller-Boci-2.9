@@ -655,14 +655,22 @@ function renderResellerOrders(orders){
 function initAdminView(){
   document.getElementById("adminView").classList.remove("hidden");
   document.getElementById("resellerView").classList.add("hidden");
+  
   if (unsubOrders) unsubOrders();
+
+  // Menambahkan error handling pada onSnapshot
   unsubOrders = db.collection("orders")
     .orderBy("createdAt", "desc")
     .onSnapshot((snap) => {
       const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      console.log("Data Admin Diterima:", orders); // Untuk cek di console
       renderAdminOrders(orders);
       renderRevenue(orders, "admin");
       renderChart(orders, "adminChart");
+    }, (error) => {
+      console.error("Error mengambil data admin:", error);
+      document.getElementById("adminOrdersBody").innerHTML = 
+        `<tr><td colspan="7" class="empty" style="color:red;">Error: ${error.message}. <br>Pastikan Index Firestore sudah dibuat.</td></tr>`;
     });
 }
 
@@ -674,7 +682,7 @@ function renderAdminOrders(orders){
   }
   tbody.innerHTML = orders.map((o) => `
     <tr>
-      <td>${toDate(o.createdAt).toLocaleDateString("id-ID")}</td>
+      <td>${o.createdAt ? toDate(o.createdAt).toLocaleDateString("id-ID") : 'Menunggu...'}</td>
       <td>${o.resellerName || "Anonim"}</td>
       <td>${o.produk}</td>
       <td>${o.jumlah}</td>
@@ -693,7 +701,9 @@ function renderAdminOrders(orders){
 
   document.querySelectorAll(".statusSelect").forEach(s => {
     s.addEventListener("change", (e) => {
-      db.collection("orders").doc(e.target.dataset.id).update({ status: e.target.value });
+      db.collection("orders").doc(e.target.dataset.id).update({ status: e.target.value })
+      .then(() => console.log("Status berhasil diupdate"))
+      .catch(err => alert("Gagal update status: " + err.message));
     });
   });
 }
