@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Reseller — Boci Urat</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#1C120D;
+    --bg-elevated:#2A1912;
+    --card:#FFF7EC;
+    --card-soft:#FBEFDE;
+    --red-deep:#7A1717;
+    --red-mid:#C62828;
+    --red-bright:#E13B3B;
+    --gold:#F2A93B;
+    --gold-soft:#F6C878;
+    --text-cream:#F7EFE3;
+    --text-dark:#2B1B12;
+    --text-muted:#CBB9A6;
+    --text-muted-dark:#8A7461;
+    --green:#6E8F5C;
+    --amber:#D89A3B;
+    --gray:#8A7B6C;
+    --danger:#B23A3A;
+    --radius:16px;
+    --shadow: 0 12px 30px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(230,80,60,0.20), transparent 40%),
+      radial-gradient(circle at 100% 0%, rgba(242,169,59,0.12), transparent 45%),
+      var(--bg);
+    color:var(--text-cream);
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0;}
+  .hidden{display:none !important;}
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;}
+  input,select{font-family:'Inter',sans-serif;}
+
+  .logo-badge{
+    width:46px;height:46px;border-radius:50%;
+    background:conic-gradient(from 0deg,#F2A93B,#E13B3B,#F2A93B,#E13B3B,#F2A93B);
+    padding:3px;flex-shrink:0;
+  }
+  .logo-badge span{
+    width:100%;height:100%;border-radius:50%;
+    background:var(--red-deep);color:var(--text-cream);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2',sans-serif;font-weight:800;font-size:11px;letter-spacing:0.5px;
+  }
+  .logo-badge.lg{width:74px;height:74px;}
+  .logo-badge.lg span{font-size:16px;}
+
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .login-wrap{
+    width:100%;max-width:920px;
+    background:var(--bg-elevated);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    display:grid;grid-template-columns:1fr 1fr;
+    overflow:hidden;
+    border:1px solid rgba(242,169,59,0.15);
+  }
+  .login-side{
+    padding:48px 36px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(225,59,59,0.35), transparent 55%),
+      linear-gradient(160deg, var(--red-deep), #4A0E0E 80%);
+    display:flex;flex-direction:column;justify-content:center;gap:18px;
+  }
+  .login-side .eyebrow{
+    text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--gold-soft);font-weight:600;
+  }
+  .login-side h1{font-size:30px;line-height:1.15;color:var(--text-cream);}
+  .login-side p{color:var(--text-muted);font-size:14px;line-height:1.6;margin:0;}
+  .spice-list{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:10px;}
+  .spice-list li{font-size:13px;color:var(--text-muted);display:flex;gap:8px;align-items:baseline;}
+  .spice-list li b{color:var(--gold-soft);}
+
+  .login-form-side{padding:44px 36px;background:var(--card);}
+  .tabs{display:flex;gap:4px;background:var(--card-soft);padding:4px;border-radius:12px;margin-bottom:28px;}
+  .tab-btn{
+    flex:1;padding:10px 12px;border-radius:9px;background:transparent;color:var(--text-muted-dark);
+    font-weight:600;font-size:13px;transition:all .15s ease;
+  }
+  .tab-btn.active{background:var(--red-mid);color:#fff;box-shadow:0 4px 10px rgba(198,40,40,0.35);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted-dark);margin-bottom:6px;}
+  .field input{
+    width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #E9D9C4;
+    background:#fff;color:var(--text-dark);font-size:14px;outline:none;transition:border .15s ease;
+  }
+  .field input:focus{border-color:var(--red-mid);}
+  .btn-primary{
+    width:100%;padding:13px;border-radius:10px;background:var(--red-mid);color:#fff;
+    font-weight:700;font-size:14px;letter-spacing:.3px;margin-top:6px;
+    box-shadow:0 8px 18px rgba(198,40,40,0.3);transition:transform .12s ease;
+  }
+  .btn-primary:hover{transform:translateY(-1px);}
+  .btn-primary:active{transform:translateY(0);}
+  .form-error{color:var(--danger);font-size:12.5px;margin:-6px 0 14px;min-height:14px;}
+  .auth-form{display:none;}
+  .auth-form.active{display:block;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 26px;background:var(--bg-elevated);
+    border-bottom:1px solid rgba(242,169,59,0.15);
+    position:sticky;top:0;z-index:20;
+  }
+  .topbar-left{display:flex;align-items:center;gap:12px;}
+  .topbar-left .app-name{font-size:15px;font-weight:700;color:var(--text-cream);}
+  .topbar-left .app-name small{display:block;font-family:'Inter';font-weight:500;font-size:11px;color:var(--text-muted);}
+  .profile-trigger{
+    width:42px;height:42px;border-radius:50%;background:var(--gold);
+    color:var(--red-deep);font-family:'Baloo 2';font-weight:800;font-size:15px;
+    display:flex;align-items:center;justify-content:center;position:relative;
+    border:2px solid rgba(255,255,255,0.15);
+  }
+  .profile-panel{
+    position:absolute;top:64px;right:26px;width:270px;background:var(--card);
+    border-radius:14px;box-shadow:var(--shadow);padding:18px;z-index:30;color:var(--text-dark);
+  }
+  .profile-panel h3{font-size:14px;margin-bottom:2px;}
+  .profile-panel .role-tag{
+    display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.4px;color:var(--red-mid);background:#FBE1D9;padding:2px 8px;border-radius:20px;margin-bottom:14px;
+  }
+  .profile-row{margin-bottom:10px;}
+  .profile-row span{display:block;font-size:10.5px;color:var(--text-muted-dark);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+  .profile-row b{font-size:13.5px;font-weight:600;color:var(--text-dark);}
+  .btn-logout{
+    width:100%;margin-top:8px;padding:10px;border-radius:9px;background:var(--red-deep);
+    color:#fff;font-weight:700;font-size:12.5px;
+  }
+
+  .container{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
+  .welcome{margin-bottom:22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .welcome h1{font-size:22px;color:var(--text-cream);}
+  .badge{
+    background:rgba(242,169,59,0.15);color:var(--gold-soft);border:1px solid rgba(242,169,59,0.4);
+    padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+  }
+
+  .card{
+    background:var(--card);border-radius:var(--radius);padding:22px;margin-bottom:22px;
+    box-shadow:var(--shadow);color:var(--text-dark);
+  }
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+  .card-head h2{font-size:17px;color:var(--text-dark);}
+  .btn-accent{
+    background:var(--gold);color:var(--red-deep);padding:10px 16px;border-radius:9px;
+    font-weight:700;font-size:13px;box-shadow:0 6px 14px rgba(242,169,59,0.35);
+  }
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px;}
+  thead th{
+    text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--text-muted-dark);padding:8px 10px;border-bottom:2px solid var(--card-soft);
+  }
+  tbody td{padding:11px 10px;border-bottom:1px solid var(--card-soft);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.empty{text-align:center;color:var(--text-muted-dark);padding:26px 10px;font-style:italic;}
+
+  .status{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;}
+  .status-pending{background:#EFE6DA;color:var(--gray);}
+  .status-diproses{background:#FBEAC7;color:var(--amber);}
+  .status-selesai{background:#E1EBDA;color:var(--green);}
+  .status-dibatalkan{background:#F5DADA;color:var(--danger);}
+  .statusSelect{border:1px solid #E9D9C4;border-radius:8px;padding:5px 7px;font-size:12px;background:#fff;}
+
+  .revenue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px;}
+  .revenue-card{
+    position:relative;border-radius:var(--radius);padding:20px 18px 18px;color:#fff;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .revenue-card::after{
+    content:"";position:absolute;left:0;right:0;bottom:46px;height:0;
+    border-top:2px dashed rgba(255,255,255,0.35);
+  }
+  .revenue-card .level-badge{
+    position:absolute;top:14px;right:14px;font-size:11px;font-weight:800;
+    background:rgba(0,0,0,0.18);padding:3px 9px;border-radius:20px;letter-spacing:.3px;
+  }
+  .revenue-card .rlabel{font-size:12px;font-weight:600;opacity:.9;text-transform:uppercase;letter-spacing:.5px;}
+  .revenue-card .ramount{font-family:'Baloo 2';font-size:24px;font-weight:800;margin-top:6px;line-height:1.15;}
+  .revenue-card .rsub{margin-top:20px;font-size:11px;opacity:.85;}
+  .level-1{background:linear-gradient(150deg,#F2A93B,#D88423);}
+  .level-2{background:linear-gradient(150deg,#E96A2C,#C6421B);}
+  .level-3{background:linear-gradient(150deg,#C6281F,#7A1717);}
+
+  .chart-card canvas{max-height:280px;}
+
+  .modal{position:fixed;inset:0;background:rgba(20,10,6,0.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .modal-box{background:var(--card);border-radius:18px;padding:26px;width:100%;max-width:420px;color:var(--text-dark);box-shadow:var(--shadow);}
+  .modal-box h2{font-size:17px;margin-bottom:18px;}
+  .modal-actions{display:flex;gap:10px;margin-top:6px;}
+  .modal-actions .btn-secondary{flex:1;background:var(--card-soft);color:var(--text-dark);padding:11px;border-radius:9px;font-weight:700;font-size:13px;}
+  .modal-actions .btn-primary{flex:1;margin-top:0;}
+  .total-preview{
+    background:var(--card-soft);border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:16px;
+    display:flex;justify-content:space-between;font-weight:700;color:var(--red-mid);
+  }
+
+  @media (max-width:760px){
+    .login-wrap{grid-template-columns:1fr;}
+    .login-side{padding:34px 26px;}
+    .revenue-grid{grid-template-columns:1fr;}
+    .profile-panel{right:14px;width:calc(100% - 28px);}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-side">
+      <div class="logo-badge lg"><span>BOCI</span></div>
+      <div class="eyebrow">Portal Reseller</div>
+      <h1>Kelola pesanan &amp; pendapatan reseller kamu di satu tempat.</h1>
+      <p>Masuk sebagai reseller untuk mengajukan pesanan dan memantau pendapatan, atau sebagai admin untuk mengelola pesanan masuk.</p>
+      <ul class="spice-list">
+        <li><b>🌶️ Harian</b> — pantau cuan hari ini</li>
+        <li><b>🌶️🌶️ Mingguan</b> — lihat tren 7 hari terakhir</li>
+        <li><b>🌶️🌶️🌶️ Bulanan</b> — total performa jualan</li>
+      </ul>
+    </div>
+    <div class="login-form-side">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLoginBtn">Masuk</button>
+        <button class="tab-btn" id="tabRegisterBtn">Daftar Reseller</button>
+      </div>
+
+      <form id="loginForm" class="auth-form active">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" required placeholder="nama@email.com">
+        </div>
+        <div class="field">
+          <label>Kata Sandi</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <div class="form-error" id="loginError"></div>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn">Masuk</button>
+      </form>
+
+      <form id="registerForm" class="auth-form">
+        <div class="field">
+          <label>Nama Lengkap</label>
+          <input type="text" id="regNama" required placeholder="Nama kamu">
+        </div>
+        <div class="field">
+          <label>Alamat</label>
+          <input type="text" id="regAlamat" required placeholder="Alamat lengkap">
+        </div>
+        <div class="field">
+          <label>Nomor HP</label>
+          <input type="tel" id="regHp" required placeholder="08xxxxxxxxxx">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="regEmail" required placeholder="nama@email.com">
+        </div>
+        <div class="field">
+          <label>Kata Sandi</label>
+          <input type="password" id="regPassword" required placeholder="Minimal 6 karakter">
+        </div>
+        <div class="form-error" id="registerError"></div>
+        <button type="submit" class="btn-primary" id="registerSubmitBtn">Daftar Jadi Reseller</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="appScreen" class="hidden">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-badge"><span>BOCI</span></div>
+      <div class="app-name">Portal Reseller<small>Boci Urat</small></div>
+    </div>
+    <button class="profile-trigger" id="profileTrigger">?</button>
+  </header>
+
+  <div id="profilePanel" class="profile-panel hidden">
+    <span class="role-tag" id="profileRoleTag">Reseller</span>
+    <h3 id="profileNama">-</h3>
+    <div class="profile-row" style="margin-top:14px;">
+      <span>Alamat</span><b id="profileAlamat">-</b>
+    </div>
+    <div class="profile-row">
+      <span>Nomor HP</span><b id="profileHp">-</b>
+    </div>
+    <div class="profile-row">
+      <span>Email</span><b id="profileEmail">-</b>
+    </div>
+    <button class="btn-logout" id="btnLogout">Keluar</button>
+  </div>
+
+  <main class="container">
+    <div class="welcome">
+      <h1 id="welcomeName">Halo 👋</h1>
+      <span class="badge" id="roleBadge">Reseller</span>
+    </div>
+
+    <section id="resellerView" class="hidden">
+      <div class="card orders-card">
+        <div class="card-head">
+          <h2>Order Pesanan</h2>
+          <button class="btn-accent" id="btnNewOrder">+ Pesanan Baru</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tanggal</th><th>Produk</th><th>Jumlah</th><th>Total</th><th>Status</th></tr>
+            </thead>
+            <tbody id="resellerOrdersBody">
+              <tr><td colspan="5" class="empty">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="revenue-grid">
+        <div class="revenue-card level-1">
+          <span class="level-badge">🌶️</span>
+          <div class="rlabel">Pendapatan Harian</div>
+          <div class="ramount" id="resellerHarian">Rp0</div>
+          <div class="rsub">Total pesanan selesai hari ini</div>
+        </div>
+        <div class="revenue-card level-2">
+          <span class="level-badge">🌶️🌶️</span>
+          <div class="rlabel">Pendapatan Mingguan</div>
+          <div class="ramount" id="resellerMingguan">Rp0</div>
+          <div class="rsub">7 hari terakhir</div>
+        </div>
+        <div class="revenue-card level-3">
+          <span class="level-badge">🌶️🌶️🌶️</span>
+          <div class="rlabel">Pendapatan Bulanan</div>
+          <div class="ramount" id="resellerBulanan">Rp0</div>
+          <div class="rsub">Bulan berjalan</div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h2 style="margin-bottom:14px;">Grafik Penjualan</h2>
+        <canvas id="resellerChart"></canvas>
+      </div>
+    </section>
+
+    <section id="adminView" class="hidden">
+      <div class="card orders-card">
+        <div class="card-head">
+          <h2>Menu Pesanan Reseller</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tanggal</th><th>Reseller</th><th>Produk</th><th>Jumlah</th><th>Total</th><th>Status</th><th>Ubah Status</th></tr>
+            </thead>
+            <tbody id="adminOrdersBody">
+              <tr><td colspan="7" class="empty">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="revenue-grid">
+        <div class="revenue-card level-1">
+          <span class="level-badge">🌶️</span>
+          <div class="rlabel">Total Harian</div>
+          <div class="ramount" id="adminHarian">Rp0</div>
+          <div class="rsub">Semua reseller, hari ini</div>
+        </div>
+        <div class="revenue-card level-2">
+          <span class="level-badge">🌶️🌶️</span>
+          <div class="rlabel">Total Mingguan</div>
+          <div class="ramount" id="adminMingguan">Rp0</div>
+          <div class="rsub">7 hari terakhir</div>
+        </div>
+        <div class="revenue-card level-3">
+          <span class="level-badge">🌶️🌶️🌶️</span>
+          <div class="rlabel">Total Bulanan</div>
+          <div class="ramount" id="adminBulanan">Rp0</div>
+          <div class="rsub">Bulan berjalan</div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <h2 style="margin-bottom:14px;">Grafik Penjualan Total</h2>
+        <canvas id="adminChart"></canvas>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="orderModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Buat Pesanan Baru</h2>
+    <form id="orderForm">
+      <div class="field">
+        <label>Produk</label>
+        <select id="orderProduk" required></select>
+      </div>
+      <div class="field">
+        <label>Jumlah (porsi)</label>
+        <input type="number" id="orderJumlah" min="1" value="1" required>
+      </div>
+      <div class="total-preview">
+        <span>Estimasi Total</span>
+        <span id="orderTotalPreview">Rp0</span>
+      </div>
+      <div class="form-error" id="orderError"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="btnCancelOrder">Batal</button>
+        <button type="submit" class="btn-primary" id="orderSubmitBtn">Kirim Pesanan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<script>
+/* ================================================================
+   KONFIGURASI FIREBASE
+   ================================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDCwm30g0G0RiPc1Qq8EZGB-4s_TS8oUC8",
+  authDomain: "oktshop17srg-77563278-5a16b.firebaseapp.com",
+  databaseURL: "https://oktshop17srg-77563278-5a16b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "oktshop17srg-77563278-5a16b",
+  storageBucket: "oktshop17srg-77563278-5a16b.firebasestorage.app",
+  messagingSenderId: "383895713061",
+  appId: "1:383895713061:web:c10ed7c8f8e083e1ba96cc"
+};
+
+// PERBAIKAN: Menggunakan firebaseConfig (bukan huruf besar)
+firebase.initializeApp(firebaseConfig); 
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const PRICE_LIST = {
+  "Boci Urat": 15000,
+  "Boci Tetelan": 15000,
+  "Boci Original": 12000,
+  "Boci Ayam Suir": 15000,
+  "Usus Pedas": 10000,
+  "Mie Kremes Pedas": 8000,
+  "Kulit Pedas": 10000,
+  "Basreng Pedas": 10000
+};
+
+let currentUid = null;
+let currentProfile = null;
+let currentRole = null;
+let unsubOrders = null;
+let chartInstance = null;
+
+/* ---------------- Helpers ---------------- */
+function formatRupiah(n){
+  return "Rp" + Math.round(n || 0).toLocaleString("id-ID");
+}
+function statusLabel(s){
+  return { pending:"Menunggu", diproses:"Diproses", selesai:"Selesai", dibatalkan:"Dibatalkan" }[s] || s;
+}
+function toDate(ts){
+  if (!ts) return new Date();
+  return ts.toDate ? ts.toDate() : new Date(ts);
+}
+function showError(el, msg){ el.textContent = msg; }
+function clearError(el){ el.textContent = ""; }
+
+/* ---------------- Tabs ---------------- */
+const tabLoginBtn = document.getElementById("tabLoginBtn");
+const tabRegisterBtn = document.getElementById("tabRegisterBtn");
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+
+tabLoginBtn.addEventListener("click", () => {
+  tabLoginBtn.classList.add("active"); tabRegisterBtn.classList.remove("active");
+  loginForm.classList.add("active"); registerForm.classList.remove("active");
+});
+tabRegisterBtn.addEventListener("click", () => {
+  tabRegisterBtn.classList.add("active"); tabLoginBtn.classList.remove("active");
+  registerForm.classList.add("active"); loginForm.classList.remove("active");
+});
+
+/* ---------------- Auth Logic ---------------- */
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("loginError");
+  clearError(errEl);
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const btn = document.getElementById("loginSubmitBtn");
+  btn.disabled = true; btn.textContent = "Memproses...";
+  auth.signInWithEmailAndPassword(email, password)
+    .catch((err) => showError(errEl, terjemahkanError(err)))
+    .finally(() => { btn.disabled = false; btn.textContent = "Masuk"; });
+});
+
+registerForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("registerError");
+  clearError(errEl);
+  const nama = document.getElementById("regNama").value.trim();
+  const alamat = document.getElementById("regAlamat").value.trim();
+  const hp = document.getElementById("regHp").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const btn = document.getElementById("registerSubmitBtn");
+  btn.disabled = true; btn.textContent = "Mendaftarkan...";
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then((cred) => {
+      return db.collection("users").doc(cred.user.uid).set({
+        nama, alamat, hp, email, role: "reseller",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    })
+    .catch((err) => showError(errEl, terjemahkanError(err)))
+    .finally(() => { btn.disabled = false; btn.textContent = "Daftar Jadi Reseller"; });
+});
+
+function terjemahkanError(err){
+  const map = {
+    "auth/email-already-in-use": "Email sudah terdaftar.",
+    "auth/invalid-email": "Format email tidak valid.",
+    "auth/weak-password": "Kata sandi minimal 6 karakter.",
+    "auth/user-not-found": "Akun tidak ditemukan.",
+    "auth/wrong-password": "Kata sandi salah.",
+    "auth/invalid-credential": "Email atau kata sandi salah."
+  };
+  return map[err.code] || err.message;
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUid = user.uid;
+    try {
+      const doc = await db.collection("users").doc(user.uid).get();
+      if (!doc.exists) {
+        alert("Profil belum dibuat di database.");
+        await auth.signOut();
+        return;
+      }
+      currentProfile = doc.data();
+      currentRole = currentProfile.role || "reseller";
+      renderProfile(currentProfile, currentRole);
+      showApp();
+      if (currentRole === "admin") {
+        initAdminView();
+      } else {
+        initResellerView(user.uid);
+      }
+    } catch (err) { console.error(err); }
+  } else {
+    if (unsubOrders) { unsubOrders(); unsubOrders = null; }
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    currentUid = null; currentProfile = null; currentRole = null;
+    showLogin();
+  }
+});
+
+function showApp(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("appScreen").classList.remove("hidden");
+}
+function showLogin(){
+  document.getElementById("appScreen").classList.add("hidden");
+  document.getElementById("loginScreen").classList.remove("hidden");
+  document.getElementById("resellerView").classList.add("hidden");
+  document.getElementById("adminView").classList.add("hidden");
+}
+
+function renderProfile(p, role){
+  document.getElementById("profileNama").textContent = p.nama || "-";
+  document.getElementById("profileAlamat").textContent = p.alamat || "-";
+  document.getElementById("profileHp").textContent = p.hp || "-";
+  document.getElementById("profileEmail").textContent = p.email || "-";
+  document.getElementById("profileRoleTag").textContent = role.toUpperCase();
+  document.getElementById("profileTrigger").textContent = (p.nama || "?").charAt(0).toUpperCase();
+  document.getElementById("welcomeName").textContent = "Halo, " + (p.nama || "") + " 👋";
+  document.getElementById("roleBadge").textContent = role;
+}
+
+/* ---------------- UI Toggles ---------------- */
+const profileTrigger = document.getElementById("profileTrigger");
+const profilePanel = document.getElementById("profilePanel");
+profileTrigger.addEventListener("click", (e) => {
+  e.stopPropagation(); profilePanel.classList.toggle("hidden");
+});
+document.addEventListener("click", (e) => {
+  if (!profilePanel.contains(e.target) && e.target !== profileTrigger) {
+    profilePanel.classList.add("hidden");
+  }
+});
+document.getElementById("btnLogout").addEventListener("click", () => auth.signOut());
+
+/* ---------------- Reseller Logic ---------------- */
+function initResellerView(uid){
+  document.getElementById("resellerView").classList.remove("hidden");
+  document.getElementById("adminView").classList.add("hidden");
+  if (unsubOrders) unsubOrders();
+  unsubOrders = db.collection("orders")
+    .where("resellerId", "==", uid)
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snap) => {
+      const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderResellerOrders(orders);
+      renderRevenue(orders, "reseller");
+      renderChart(orders, "resellerChart");
+    });
+}
+
+function renderResellerOrders(orders){
+  const tbody = document.getElementById("resellerOrdersBody");
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada pesanan.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map((o) => `
+    <tr>
+      <td>${toDate(o.createdAt).toLocaleDateString("id-ID")}</td>
+      <td>${o.produk}</td>
+      <td>${o.jumlah}</td>
+      <td>${formatRupiah(o.total)}</td>
+      <td><span class="status status-${o.status}">${statusLabel(o.status)}</span></td>
+    </tr>
+  `).join("");
+}
+
+/* ---------------- Admin Logic ---------------- */
+function initAdminView(){
+  document.getElementById("adminView").classList.remove("hidden");
+  document.getElementById("resellerView").classList.add("hidden");
+  if (unsubOrders) unsubOrders();
+  unsubOrders = db.collection("orders")
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snap) => {
+      const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderAdminOrders(orders);
+      renderRevenue(orders, "admin");
+      renderChart(orders, "adminChart");
+    });
+}
+
+function renderAdminOrders(orders){
+  const tbody = document.getElementById("adminOrdersBody");
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Tidak ada pesanan masuk.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map((o) => `
+    <tr>
+      <td>${toDate(o.createdAt).toLocaleDateString("id-ID")}</td>
+      <td>${o.resellerName || "Anonim"}</td>
+      <td>${o.produk}</td>
+      <td>${o.jumlah}</td>
+      <td>${formatRupiah(o.total)}</td>
+      <td><span class="status status-${o.status}">${statusLabel(o.status)}</span></td>
+      <td>
+        <select class="statusSelect" data-id="${o.id}">
+          <option value="pending" ${o.status==="pending"?"selected":""}>Menunggu</option>
+          <option value="diproses" ${o.status==="diproses"?"selected":""}>Diproses</option>
+          <option value="selesai" ${o.status==="selesai"?"selected":""}>Selesai</option>
+          <option value="dibatalkan" ${o.status==="dibatalkan"?"selected":""}>Batal</option>
+        </select>
+      </td>
+    </tr>
+  `).join("");
+
+  document.querySelectorAll(".statusSelect").forEach(s => {
+    s.addEventListener("change", (e) => {
+      db.collection("orders").doc(e.target.dataset.id).update({ status: e.target.value });
+    });
+  });
+}
+
+/* ---------------- Common Dashboard Logic ---------------- */
+function renderRevenue(orders, mode){
+  const completed = orders.filter(o => o.status === "selesai");
+  const now = new Date();
+  const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startWeek = new Date(startDay); startWeek.setDate(startDay.getDate() - 7);
+  const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let h=0, w=0, m=0;
+  completed.forEach(o => {
+    const t = toDate(o.createdAt);
+    if(t >= startDay) h += o.total;
+    if(t >= startWeek) w += o.total;
+    if(t >= startMonth) m += o.total;
+  });
+  document.getElementById(mode+"Harian").textContent = formatRupiah(h);
+  document.getElementById(mode+"Mingguan").textContent = formatRupiah(w);
+  document.getElementById(mode+"Bulanan").textContent = formatRupiah(m);
+}
+
+function renderChart(orders, canvasId){
+  const completed = orders.filter(o => o.status === "selesai");
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  const labels = days.map(d => d.toLocaleDateString("id-ID", {day:'numeric', month:'short'}));
+  const data = days.map(d => {
+    const dStr = d.toDateString();
+    return completed.filter(o => toDate(o.createdAt).toDateString() === dStr).reduce((a,b)=>a+b.total, 0);
+  });
+
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Penjualan', data, borderColor:'#E13B3B', backgroundColor:'rgba(225,59,59,0.1)', fill:true, tension:0.4
+      }]
+    },
+    options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+}
+
+/* ---------------- Modal & Order ---------------- */
+const orderModal = document.getElementById("orderModal");
+const orderProdukSelect = document.getElementById("orderProduk");
+const orderJumlahInput = document.getElementById("orderJumlah");
+const orderTotalPreview = document.getElementById("orderTotalPreview");
+
+Object.keys(PRICE_LIST).forEach(p => {
+  const opt = document.createElement("option"); opt.value = p;
+  opt.textContent = `${p} (${formatRupiah(PRICE_LIST[p])})`;
+  orderProdukSelect.appendChild(opt);
+});
+
+function updatePreview(){
+  const total = (PRICE_LIST[orderProdukSelect.value] || 0) * (orderJumlahInput.value || 0);
+  orderTotalPreview.textContent = formatRupiah(total);
+}
+orderProdukSelect.onchange = updatePreview;
+orderJumlahInput.oninput = updatePreview;
+
+document.getElementById("btnNewOrder").onclick = () => {
+  updatePreview(); orderModal.classList.remove("hidden");
+};
+document.getElementById("btnCancelOrder").onclick = () => orderModal.classList.add("hidden");
+
+document.getElementById("orderForm").onsubmit = (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("orderSubmitBtn");
+  btn.disabled = true;
+  const produk = orderProdukSelect.value;
+  const jumlah = parseInt(orderJumlahInput.value);
+  const total = PRICE_LIST[produk] * jumlah;
+
+  db.collection("orders").add({
+    resellerId: currentUid,
+    resellerName: currentProfile.nama,
+    produk, jumlah, total,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    orderModal.classList.add("hidden");
+    document.getElementById("orderForm").reset();
+  }).finally(() => btn.disabled = false);
+};
+</script>
+</body>
+</html>
