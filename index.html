@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal Boci Urat — Dashboard Reseller</title>
+<title>Portal Boci Urat — Professional Dashboard</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -72,16 +72,16 @@
   .menu-toggle { background:none; color:var(--gold); font-size:24px; padding:0; }
 
   /* --- STAT CARDS --- */
-  .stat-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin-bottom:25px; }
+  .stat-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin-bottom:20px; }
   .stat-card { padding:20px; border-radius:16px; color:#fff; position:relative; overflow:hidden; }
   .stat-card.c1 { background: linear-gradient(135deg, #F2A93B, #D88423); } 
   .stat-card.c2 { background: linear-gradient(135deg, #E13B3B, #C62828); } 
   .stat-card.c3 { background: linear-gradient(135deg, #6E8F5C, #4A633C); } 
-  .stat-label { font-size:11px; font-weight:600; text-transform:uppercase; opacity:0.9; }
+  .stat-label { font-size:10px; font-weight:600; text-transform:uppercase; opacity:0.9; }
   .stat-value { font-size:22px; font-weight:800; font-family:'Baloo 2'; margin-top:5px; }
 
   /* --- COMPONENTS --- */
-  .card { background:var(--card); border-radius:16px; padding:20px; color:var(--text-dark); margin-bottom:20px; }
+  .card { background:var(--card); border-radius:16px; padding:20px; color:var(--text-dark); margin-bottom:20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
   table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
   th { text-align:left; padding:12px; border-bottom:2px solid #eee; color:#888; text-transform: uppercase; font-size: 10px; }
   td { padding:12px; border-bottom:1px solid #eee; }
@@ -101,7 +101,7 @@
     .login-wrap { grid-template-columns: 1fr; }
     .login-side { display:none; }
     .stat-grid { grid-template-columns: 1fr; }
-    .user-greeting { display: none; } /* Sembunyikan nama di HP agar tidak sempit */
+    .user-greeting { display: none; }
   }
 </style>
 </head>
@@ -112,8 +112,8 @@
   <div class="login-wrap">
     <div class="login-side">
       <div style="background:var(--red-deep); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid var(--gold); margin-bottom:20px;">BOCI</div>
-      <h1 style="font-family:'Baloo 2'; line-height:1.2;">Kelola cuan jualan Boci kamu di sini.</h1>
-      <p style="color:var(--text-muted); font-size:14px;">Masuk untuk memantau pesanan harian, mingguan, dan bulanan kamu secara realtime.</p>
+      <h1 style="font-family:'Baloo 2'; line-height:1.2;">Boci Urat Management System</h1>
+      <p style="color:var(--text-muted); font-size:14px;">Kelola pesanan dan pantau pendapatan jualan kamu secara realtime.</p>
     </div>
     <div class="login-form-side">
       <div class="tabs">
@@ -122,24 +122,18 @@
       </div>
 
       <form id="loginForm" class="auth-form active">
-        <div style="margin-bottom:15px;">
-          <label style="font-size:11px; font-weight:700; color:#555;">EMAIL</label>
-          <input type="email" id="loginEmail" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-top:5px;" placeholder="nama@email.com">
-        </div>
-        <div style="margin-bottom:20px;">
-          <label style="font-size:11px; font-weight:700; color:#555;">KATA SANDI</label>
-          <input type="password" id="loginPassword" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-top:5px;" placeholder="••••••••">
-        </div>
-        <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:14px; border-radius:8px; font-weight:700; box-shadow: 0 4px 15px rgba(198,40,40,0.3);">Masuk Sekarang</button>
+        <div style="margin-bottom:15px;"><label style="font-size:11px; font-weight:700;">EMAIL</label><input type="email" id="loginEmail" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-top:5px;" placeholder="nama@email.com"></div>
+        <div style="margin-bottom:20px;"><label style="font-size:11px; font-weight:700;">KATA SANDI</label><input type="password" id="loginPassword" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-top:5px;" placeholder="••••••••"></div>
+        <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:14px; border-radius:8px; font-weight:700;">Masuk Sekarang</button>
       </form>
 
       <form id="registerForm" class="auth-form">
         <input type="text" id="regNama" placeholder="Nama Lengkap" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
         <input type="text" id="regAlamat" placeholder="Alamat Lengkap" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-        <input type="tel" id="regHp" placeholder="Nomor HP (WhatsApp)" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-        <input type="email" id="regEmail" placeholder="Email Aktif" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-        <input type="password" id="regPassword" placeholder="Kata Sandi (Min 6 Karakter)" style="width:100%; padding:11px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px;">
-        <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:14px; border-radius:8px; font-weight:700;">Daftar Jadi Reseller</button>
+        <input type="tel" id="regHp" placeholder="No. HP" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="email" id="regEmail" placeholder="Email" style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="password" id="regPassword" placeholder="Kata Sandi" style="width:100%; padding:11px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px;">
+        <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:14px; border-radius:8px; font-weight:700;">Daftar Reseller</button>
       </form>
       <p id="authError" style="color:red; font-size:12px; text-align:center; margin-top:10px;"></p>
     </div>
@@ -149,18 +143,16 @@
 <!-- APP WRAPPER -->
 <div id="appWrapper" class="hidden">
   <aside id="sidebar">
-    <div style="padding:25px; border-bottom:1px solid rgba(255,255,255,0.1)">
-      <h2 style="font-family:'Baloo 2'; color:var(--gold); margin:0;">BOCI URAT</h2>
-    </div>
+    <div style="padding:25px; border-bottom:1px solid rgba(255,255,255,0.1)"><h2 style="font-family:'Baloo 2'; color:var(--gold); margin:0;">BOCI URAT</h2></div>
     <nav>
-      <!-- Reseller Menu -->
+      <!-- Reseller -->
       <div class="reseller-only hidden">
         <div class="nav-item active" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
         <div class="nav-item" onclick="showSection('secResellerReturn')">⚠️ Retur Pesanan</div>
       </div>
-      <!-- Admin Menu -->
+      <!-- Admin -->
       <div class="admin-only hidden">
-        <div class="nav-item" onclick="showSection('secAdminOrders')">📦 Pesanan Masuk</div>
+        <div class="nav-item active" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
         <div class="nav-item" onclick="showSection('secAdminCatalog')">📖 Update Katalog</div>
         <div class="nav-item" onclick="showSection('secAdminReturns')">🔄 Returan Masuk</div>
       </div>
@@ -170,14 +162,9 @@
 
   <main id="mainContent">
     <header class="top-nav">
-      <div class="nav-left">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <span id="sectionTitle" style="font-weight:700; color:var(--gold); font-size: 14px;">Portal</span>
-      </div>
-      
+      <div class="nav-left"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><span id="sectionTitle" style="font-weight:700; color:var(--gold); font-size: 14px;">Dashboard</span></div>
       <div class="nav-right">
-        <button class="reseller-only hidden" onclick="openOrderModal()" style="background:var(--gold); color:var(--red-deep); padding:6px 12px; border-radius:6px; font-weight:700; font-size: 11px;">+ Pesan</button>
-        <div style="height: 20px; width: 1px; background: rgba(255,255,255,0.2);"></div>
+        <button class="reseller-only hidden" onclick="openOrderModal()" style="background:var(--gold); color:var(--red-deep); padding:6px 12px; border-radius:6px; font-weight:700; font-size: 11px;">+ Pesan Produk</button>
         <span class="user-greeting" id="headerGreeting">Halo, User</span>
         <button onclick="logout()" class="btn-logout-head">Keluar</button>
       </div>
@@ -185,91 +172,63 @@
 
     <div style="padding:20px;">
       
-      <!-- Section Reseller Dashboard -->
+      <!-- Dashboard Reseller -->
       <section id="secResellerDashboard" class="app-section hidden">
         <div class="stat-grid">
-          <div class="stat-card c1">
-            <div class="stat-label">Qty Pembelian (Porsi)</div>
-            <div id="statQty" class="stat-value">0</div>
-          </div>
-          <div class="stat-card c2">
-            <div class="stat-label">Total Belanja</div>
-            <div id="statTotal" class="stat-value">Rp0</div>
-          </div>
-          <div class="stat-card c3">
-            <div class="stat-label">Total Diskon</div>
-            <div id="statDiskon" class="stat-value">Rp0</div>
-          </div>
+          <div class="stat-card c1"><div class="stat-label">Qty Pembelian</div><div id="resQty" class="stat-value">0</div></div>
+          <div class="stat-card c2"><div class="stat-label">Total Belanja</div><div id="resTotal" class="stat-value">Rp0</div></div>
+          <div class="stat-card c3"><div class="stat-label">Total Diskon</div><div id="resDiskon" class="stat-value">Rp0</div></div>
         </div>
-
+        <div class="card"><h3 style="margin-top:0;">📈 Grafik Pembelian Saya</h3><canvas id="resChart" height="100"></canvas></div>
         <div class="card">
-          <h3 style="margin-top:0; font-family:'Baloo 2'; color:var(--red-deep);">📋 Riwayat Pesanan</h3>
-          <div style="overflow-x: auto;">
-            <table>
-              <thead><tr><th>Tgl</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
-              <tbody id="resellerOrdersTable"></tbody>
-            </table>
-          </div>
+          <h3>📋 Riwayat Pesanan</h3>
+          <div style="overflow-x: auto;"><table><thead><tr><th>Tgl</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerOrdersTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- Dashboard Admin (NEW) -->
+      <section id="secAdminDashboard" class="app-section hidden">
+        <div class="stat-grid">
+          <div class="stat-card c1"><div class="stat-label">Total Orderan Masuk (Porsi)</div><div id="admQty" class="stat-value">0</div></div>
+          <div class="stat-card c2"><div class="stat-label">Total Rupiah Masuk</div><div id="admTotal" class="stat-value">Rp0</div></div>
+          <div class="stat-card c3"><div class="stat-label">Total Diskon Keluar</div><div id="admDiskon" class="stat-value">Rp0</div></div>
+        </div>
+        <div class="card"><h3 style="margin-top:0;">📊 Grafik Penjualan Seluruh Reseller</h3><canvas id="admChart" height="100"></canvas></div>
+        <div class="card">
+          <h3>📦 Kelola Antrean Pesanan</h3>
+          <div style="overflow-x: auto;"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="adminOrdersTable"></tbody></table></div>
         </div>
       </section>
 
       <!-- Section Profil -->
-      <section id="secProfile" class="app-section">
+      <section id="secProfile" class="app-section hidden">
         <div class="card">
-          <h2 style="font-family:'Baloo 2'; margin:0;">Profil Pengguna</h2>
-          <hr style="opacity: 0.1; margin: 15px 0;">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-            <div><small style="color:#888;">NAMA LENGKAP</small><br><b id="uNama">-</b></div>
+          <h2 style="font-family:'Baloo 2'; margin:0;">Data Profil</h2>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px;">
+            <div><small style="color:#888;">NAMA</small><br><b id="uNama">-</b></div>
             <div><small style="color:#888;">LEVEL</small><br><b id="uRole">-</b></div>
             <div><small style="color:#888;">EMAIL</small><br><b id="uEmail">-</b></div>
-            <div><small style="color:#888;">NO. HANDPHONE</small><br><b id="uHp">-</b></div>
-            <div style="grid-column: span 2;"><small style="color:#888;">ALAMAT PENGIRIMAN</small><br><b id="uAlamat">-</b></div>
+            <div><small style="color:#888;">WHATSAPP</small><br><b id="uHp">-</b></div>
+            <div style="grid-column: span 2;"><small style="color:#888;">ALAMAT LENGKAP</small><br><b id="uAlamat">-</b></div>
           </div>
         </div>
       </section>
 
-      <!-- Admin Sections -->
-      <section id="secAdminOrders" class="app-section hidden">
-        <div class="card">
-          <h3>📦 Antrean Pesanan Masuk</h3>
-          <div style="overflow-x: auto;">
-            <table>
-              <thead><tr><th>Reseller</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
-              <tbody id="adminOrdersTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
+      <!-- Section Katalog (Admin) -->
       <section id="secAdminCatalog" class="app-section hidden">
         <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3>📖 Katalog Produk</h3>
-            <button onclick="openCatalogModal()" style="background:var(--red-mid); color:#fff; padding:6px 12px; border-radius:6px; font-size: 12px;">+ Produk Baru</button>
-          </div>
-          <div style="overflow-x: auto;">
-            <table id="adminCatalogTable">
-                <thead><tr><th>Nama Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead>
-                <tbody id="catalogBody"></tbody>
-            </table>
-          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>📖 Katalog Produk</h3><button onclick="openCatalogModal()" style="background:var(--red-mid); color:#fff; padding:6px 12px; border-radius:6px;">+ Tambah</button></div>
+          <div style="overflow-x: auto;"><table><thead><tr><th>Nama Produk</th><th>Harga</th><th>Stok</th><th>Aksi</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
         </div>
       </section>
 
+      <!-- Section Retur -->
       <section id="secResellerReturn" class="app-section hidden">
-        <div class="card">
-            <h3>⚠️ Form Pengajuan Retur</h3>
-            <form id="retForm">
-                <input type="text" id="retProd" placeholder="Nama Produk yang di Retur" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-                <input type="number" id="retQty" placeholder="Jumlah (Porsi)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-                <textarea id="retAlasan" placeholder="Alasan Retur (Misal: Bocor/Basi)" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; height: 100px;"></textarea>
-                <button type="submit" style="background:var(--red-mid); color:#fff; padding:12px 25px; border-radius:8px; font-weight: 700;">Kirim Laporan Retur</button>
-            </form>
-        </div>
+        <div class="card"><h3>⚠️ Form Retur</h3><form id="retForm"><input type="text" id="retProd" placeholder="Nama Produk" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;"><textarea id="retAlasan" placeholder="Alasan" style="width:100%; padding:12px; height:80px; border:1px solid #ddd; border-radius:8px;"></textarea><button type="submit" style="background:var(--red-mid); color:#fff; padding:12px; border-radius:8px; width:100%;">Kirim Laporan</button></form></div>
       </section>
-      
+
       <section id="secAdminReturns" class="app-section hidden">
-        <div class="card"><h3>🔄 Laporan Retur Reseller</h3><table id="adminReturnsTable"></table></div>
+        <div class="card"><h3>🔄 Daftar Retur Reseller</h3><table id="adminReturnsTable"></table></div>
       </section>
 
     </div>
@@ -278,26 +237,16 @@
 
 <!-- MODAL ORDER -->
 <div id="orderModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
-    <div class="card" style="width:100%; max-width:400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-        <h2 style="font-family:'Baloo 2'; margin-top:0;">Pesan Produk</h2>
+    <div class="card" style="width:100%; max-width:400px;">
+        <h2 style="font-family:'Baloo 2'; margin-top:0;">Buat Pesanan</h2>
         <form id="orderForm">
-            <label style="font-size:11px; font-weight: 700;">PILIH PRODUK</label>
-            <select id="ordProd" style="width:100%; padding:12px; margin: 5px 0 15px; border-radius:8px; border: 1px solid #ddd;" onchange="calcOrder()"></select>
-            
-            <label style="font-size:11px; font-weight: 700;">JUMLAH PORSI</label>
-            <input type="number" id="ordQty" value="1" min="1" style="width:100%; padding:12px; margin: 5px 0 15px; border-radius:8px; border: 1px solid #ddd;" oninput="calcOrder()">
-            
-            <div style="background:var(--card-soft); padding:15px; border-radius:12px; margin-bottom:20px; border: 1px dashed var(--gold);">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;"><span>Harga Barang:</span><b id="ordGross">Rp0</b></div>
+            <select id="ordProd" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px;" onchange="calcOrder()"></select>
+            <input type="number" id="ordQty" value="1" min="1" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px;" oninput="calcOrder()">
+            <div style="background:var(--card-soft); padding:15px; border-radius:12px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between;"><span>Total:</span><b id="ordTotal">Rp0</b></div>
                 <div style="display:flex; justify-content:space-between; color:green; font-size:12px;"><span>Diskon Reseller:</span><b id="ordDiskon">Rp0</b></div>
-                <hr style="opacity: 0.1;">
-                <div style="display:flex; justify-content:space-between; font-size: 16px; color: var(--red-mid);"><span>Total Bayar:</span><b id="ordTotal">Rp0</b></div>
             </div>
-            
-            <div style="display:flex; gap:10px;">
-                <button type="button" onclick="closeOrderModal()" style="flex:1; background:#eee; padding:12px; border-radius:8px; font-weight: 700;">Batal</button>
-                <button type="submit" style="flex:1; background:var(--red-mid); color:#fff; padding:12px; border-radius:8px; font-weight: 700;">Kirim Pesanan</button>
-            </div>
+            <div style="display:flex; gap:10px;"><button type="button" onclick="closeOrderModal()" style="flex:1; background:#eee; padding:12px; border-radius:8px;">Batal</button><button type="submit" style="flex:1; background:var(--red-mid); color:#fff; padding:12px; border-radius:8px;">Kirim</button></div>
         </form>
     </div>
 </div>
@@ -305,6 +254,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
   const firebaseConfig = {
@@ -321,8 +271,8 @@
 
   let currentUser = null;
   let catalog = [];
+  let myChart = null;
 
-  // AUTH OBSERVER
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       const doc = await db.collection("users").doc(user.uid).get();
@@ -339,10 +289,7 @@
   function initApp() {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
-    
-    // Header & Profile Setup
-    const greeting = "Halo, " + currentUser.nama;
-    document.getElementById("headerGreeting").innerText = greeting;
+    document.getElementById("headerGreeting").innerText = "Halo, " + currentUser.nama;
     document.getElementById("uNama").innerText = currentUser.nama;
     document.getElementById("uEmail").innerText = currentUser.email;
     document.getElementById("uHp").innerText = currentUser.hp;
@@ -351,35 +298,22 @@
 
     if(currentUser.role === 'admin') {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-        document.querySelectorAll('.reseller-only').forEach(el => el.classList.add('hidden'));
-        showSection('secAdminOrders');
+        showSection('secAdminDashboard');
         loadAdminData();
     } else {
         document.querySelectorAll('.reseller-only').forEach(el => el.classList.remove('hidden'));
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
         showSection('secResellerDashboard');
         loadResellerData();
     }
     syncCatalog();
   }
 
-  // DATA FETCHING
   function syncCatalog() {
     db.collection("products").onSnapshot(snap => {
         catalog = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        const opt = catalog.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
-        document.getElementById("ordProd").innerHTML = opt;
-        
-        // Render Table Catalog for Admin
+        document.getElementById("ordProd").innerHTML = catalog.map(p => `<option value="${p.id}">${p.nama}</option>`).join('');
         if(document.getElementById("catalogBody")) {
-            document.getElementById("catalogBody").innerHTML = catalog.map(p => `
-                <tr>
-                    <td><b>${p.nama}</b></td>
-                    <td>Rp${p.harga.toLocaleString()}</td>
-                    <td>${p.stok}</td>
-                    <td><button style="color:red; font-size:10px;">Hapus</button></td>
-                </tr>
-            `).join('');
+            document.getElementById("catalogBody").innerHTML = catalog.map(p => `<tr><td>${p.nama}</td><td>Rp${p.harga.toLocaleString()}</td><td>${p.stok}</td><td><button style="color:red">x</button></td></tr>`).join('');
         }
     });
   }
@@ -387,46 +321,63 @@
   function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).orderBy("createdAt", "desc").onSnapshot(snap => {
         let q=0, t=0, d=0;
+        let chartData = {};
         const html = snap.docs.map(doc => {
             const o = doc.data();
+            const tgl = o.createdAt?.toDate().toLocaleDateString('id-ID') || '-';
             if(o.status === 'selesai') {
-                q += (o.jumlah || 0);
-                t += (o.total || 0);
-                d += (o.diskon || 0);
+                q += o.jumlah; t += o.total; d += o.diskon;
+                chartData[tgl] = (chartData[tgl] || 0) + o.total;
             }
-            return `<tr>
-                <td>${o.createdAt?.toDate().toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit'}) || '-'}</td>
-                <td>${o.produk}</td>
-                <td>${o.jumlah}</td>
-                <td>Rp${o.total.toLocaleString()}</td>
-                <td><span class="status status-${o.status}">${o.status}</span></td>
-            </tr>`;
+            return `<tr><td>${tgl}</td><td>${o.produk}</td><td>${o.jumlah}</td><td>Rp${o.total.toLocaleString()}</td><td><span class="status status-${o.status}">${o.status}</span></td></tr>`;
         }).join('');
-        document.getElementById("resellerOrdersTable").innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Belum ada pesanan</td></tr>';
-        document.getElementById("statQty").innerText = q;
-        document.getElementById("statTotal").innerText = "Rp" + t.toLocaleString();
-        document.getElementById("statDiskon").innerText = "Rp" + d.toLocaleString();
+        document.getElementById("resellerOrdersTable").innerHTML = html || '<tr><td colspan="5">Belum ada pesanan</td></tr>';
+        document.getElementById("resQty").innerText = q;
+        document.getElementById("resTotal").innerText = "Rp" + t.toLocaleString();
+        document.getElementById("resDiskon").innerText = "Rp" + d.toLocaleString();
+        renderChart("resChart", chartData);
     });
   }
 
   function loadAdminData() {
     db.collection("orders").orderBy("createdAt", "desc").onSnapshot(snap => {
-        document.getElementById("adminOrdersTable").innerHTML = snap.docs.map(doc => {
+        let q=0, t=0, d=0;
+        let chartData = {};
+        const html = snap.docs.map(doc => {
             const o = doc.data();
-            return `<tr>
-                <td><b>${o.resellerName}</b></td>
-                <td>${o.produk} (${o.jumlah})</td>
-                <td>Rp${o.total.toLocaleString()}</td>
-                <td><span class="status status-${o.status}">${o.status}</span></td>
-                <td>
-                    ${o.status === 'pending' ? `<button onclick="updateStatus('${doc.id}', 'selesai')" style="background:green; color:#fff; border-radius:4px; padding:4px 8px; font-size:10px;">Selesai</button>` : '✅'}
-                </td>
-            </tr>`;
+            const tgl = o.createdAt?.toDate().toLocaleDateString('id-ID') || '-';
+            // Hitung semua orderan yang selesai untuk statistik rupiah & diskon
+            if(o.status === 'selesai') {
+                q += o.jumlah; t += o.total; d += o.diskon;
+                chartData[tgl] = (chartData[tgl] || 0) + o.total;
+            }
+            return `<tr><td><b>${o.resellerName}</b></td><td>${o.produk} (${o.jumlah})</td><td>Rp${o.total.toLocaleString()}</td><td><span class="status status-${o.status}">${o.status}</span></td><td>${o.status === 'pending' ? `<button onclick="updateStatus('${doc.id}', 'selesai')" style="background:green; color:#fff; border-radius:4px; padding:4px 8px; font-size:10px;">Selesai</button>` : '✅'}</td></tr>`;
         }).join('');
+        document.getElementById("adminOrdersTable").innerHTML = html;
+        document.getElementById("admQty").innerText = q;
+        document.getElementById("admTotal").innerText = "Rp" + t.toLocaleString();
+        document.getElementById("admDiskon").innerText = "Rp" + d.toLocaleString();
+        renderChart("admChart", chartData);
     });
   }
 
-  // ACTIONS
+  function renderChart(canvasId, dataMap) {
+    const ctx = document.getElementById(canvasId);
+    if(!ctx) return;
+    const labels = Object.keys(dataMap).reverse();
+    const values = Object.values(dataMap).reverse();
+
+    if(myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Penjualan (Rp)', data: values, borderColor: '#C62828', tension: 0.3, fill: true, backgroundColor: 'rgba(198,40,40,0.1)' }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
   function updateStatus(id, stat) { db.collection("orders").doc(id).update({status: stat}); }
 
   function calcOrder() {
@@ -435,8 +386,7 @@
     const prod = catalog.find(p => p.id === pid);
     if(prod) {
         const gross = prod.harga * qty;
-        const diskon = qty >= 10 ? (gross * 0.05) : 0; // Diskon 5% jika beli 10+
-        document.getElementById("ordGross").innerText = "Rp" + gross.toLocaleString();
+        const diskon = qty >= 10 ? (gross * 0.05) : 0;
         document.getElementById("ordDiskon").innerText = "Rp" + diskon.toLocaleString();
         document.getElementById("ordTotal").innerText = "Rp" + (gross - diskon).toLocaleString();
     }
@@ -451,71 +401,51 @@
     const diskon = qty >= 10 ? (gross * 0.05) : 0;
 
     await db.collection("orders").add({
-        resellerId: currentUser.id,
-        resellerName: currentUser.nama,
-        produk: prod.nama,
-        jumlah: qty,
-        total: gross - diskon,
-        diskon: diskon,
-        status: "pending",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        resellerId: currentUser.id, resellerName: currentUser.nama,
+        produk: prod.nama, jumlah: qty, total: gross - diskon, diskon: diskon,
+        status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    alert("Pesanan berhasil dikirim ke Admin!");
-    closeOrderModal();
+    alert("Berhasil!"); closeOrderModal();
   };
 
-  // UI HELPERS
   function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-  
   function showSection(id) {
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
-    document.getElementById("sectionTitle").innerText = id.replace('sec', '').replace('Dashboard', '');
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(window.innerWidth < 992) document.getElementById("sidebar").classList.remove("active");
   }
 
   function switchAuth(mode) {
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if(mode === 'login') {
-        document.getElementById('loginForm').classList.add('active');
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    } else {
-        document.getElementById('registerForm').classList.add('active');
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    }
+    if(mode === 'login') { document.getElementById('loginForm').classList.add('active'); document.querySelectorAll('.tab-btn')[0].classList.add('active'); }
+    else { document.getElementById('registerForm').classList.add('active'); document.querySelectorAll('.tab-btn')[1].classList.add('active'); }
   }
 
   function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); calcOrder(); }
   function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 
-  // AUTH ACTIONS
   document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
-    auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value)
-        .catch(err => document.getElementById("authError").innerText = "Login Gagal: " + err.message);
+    auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(err => alert(err.message));
   };
 
   document.getElementById("registerForm").onsubmit = async (e) => {
     e.preventDefault();
     const email = document.getElementById("regEmail").value;
     const pass = document.getElementById("regPassword").value;
-    const nama = document.getElementById("regNama").value;
     try {
         const cred = await auth.createUserWithEmailAndPassword(email, pass);
         await db.collection("users").doc(cred.user.uid).set({
-            nama, email, role: 'reseller', 
-            hp: document.getElementById("regHp").value,
-            alamat: document.getElementById("regAlamat").value,
+            nama: document.getElementById("regNama").value, email, role: 'reseller', 
+            hp: document.getElementById("regHp").value, alamat: document.getElementById("regAlamat").value,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-    } catch(err) { document.getElementById("authError").innerText = "Daftar Gagal: " + err.message; }
+    } catch(err) { alert(err.message); }
   };
 
-  function logout() { 
-    if(confirm("Apakah Anda yakin ingin keluar?")) auth.signOut(); 
-  }
+  function logout() { if(confirm("Keluar aplikasi?")) auth.signOut(); }
 </script>
 </body>
 </html>
