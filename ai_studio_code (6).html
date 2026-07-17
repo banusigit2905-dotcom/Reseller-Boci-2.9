@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Boci Urat — Professional Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Overlay untuk menutup sidebar di mobile -->
+    <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- HALAMAN LOGIN -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-area">
+                    <div class="logo-box">BOCI<br>URAT</div>
+                    <h2>Login Reseller</h2>
+                </div>
+                <p>semangat berjualan!</p>
+            </div>
+            <div class="auth-tabs">
+                <button onclick="switchAuth('login')" id="tLog" class="active">Masuk</button>
+                <button onclick="switchAuth('register')" id="tReg">Daftar</button>
+            </div>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+                <button type="submit" class="btn-primary">MASUK KE DASHBOARD</button>
+            </form>
+            <form id="registerForm" class="hidden">
+                <input type="text" id="regNama" placeholder="Nama Lengkap" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <button type="submit" class="btn-gold">DAFTAR SEKARANG</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- WRAPPER APLIKASI -->
+    <div id="appWrapper" class="hidden">
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <h2>BOCI URAT</h2>
+            </div>
+            <nav id="sidebarNav"></nav>
+        </aside>
+
+        <main id="mainContent">
+            <header class="top-nav">
+                <div class="nav-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <span id="sectionTitle">Dashboard</span>
+                </div>
+                <div class="nav-right">
+                    <button onclick="logout()" class="btn-logout">KELUAR</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                
+                <!-- DASHBOARD RESELLER -->
+                <section id="secResellerDashboard" class="app-section hidden">
+                    <div class="stat-grid">
+                        <div class="stat-card c1"><div>QTY BELI</div><div id="resQty" class="stat-value">0</div></div>
+                        <div class="stat-card c2"><div>TOTAL</div><div id="resTotal" class="stat-value">Rp0</div></div>
+                        <div class="stat-card c3"><div>POIN SAYA</div><div id="resPoin" class="stat-value">0</div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📊 Riwayat Pesanan</h3>
+                            <button onclick="openOrderModal()" class="btn-sm-gold">+ PESAN BARU</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+                                <tbody id="resellerDetailTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RETUR BARANG (RESELLER) -->
+                <section id="secResellerReturn" class="app-section hidden">
+                    <div class="card">
+                        <h3>📦 Ajukan Retur Barang</h3>
+                        <form id="returnForm">
+                            <input type="text" id="retProd" placeholder="Nama Produk" required>
+                            <textarea id="retReason" placeholder="Alasan Retur" required></textarea>
+                            <input type="tel" id="retHp" placeholder="Nomor HP Aktif" required>
+                            <button type="submit" class="btn-primary">KIRIM PENGAJUAN</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>📑 Riwayat Retur</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>No. Retur</th><th>Produk</th><th>Status</th></tr></thead>
+                                <tbody id="resellerReturnTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KELUHAN (RESELLER) -->
+                <section id="secResellerComplaint" class="app-section hidden">
+                    <div class="card">
+                        <h3>📢 Laporkan Keluhan</h3>
+                        <form id="complaintForm">
+                            <textarea id="compText" placeholder="Isi keluhan..." required></textarea>
+                            <input type="text" id="compName" placeholder="Nama Pelapor" required>
+                            <button type="submit" class="btn-primary">KIRIM LAPORAN</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>📑 Riwayat Keluhan</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Tiket</th><th>Isi Keluhan</th><th>Status</th></tr></thead>
+                                <tbody id="resellerCompTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ADMIN - DASHBOARD -->
+                <section id="secAdminDashboard" class="app-section hidden">
+                    <div class="stat-grid">
+                        <div class="stat-card c1"><div>ORDER SELESAI</div><div id="admQty" class="stat-value">0</div></div>
+                        <div class="stat-card c2"><div>OMZET</div><div id="admTotal" class="stat-value">Rp0</div></div>
+                        <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
+                    </div>
+                    <div class="card">
+                        <h3>📦 Pesanan Masuk</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Reseller</th><th>Produk</th><th>Qty</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminOrdersTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ADMIN - RETURAN MASUK -->
+                <section id="secAdminReturn" class="app-section hidden">
+                    <div class="card">
+                        <h3>📥 Returan Masuk</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>No. Retur</th><th>Reseller</th><th>Produk</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminReturnTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ADMIN - KELUHAN -->
+                <section id="secAdminComplaint" class="app-section hidden">
+                    <div class="card">
+                        <h3>📢 Daftar Keluhan</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Tiket</th><th>Pelapor</th><th>Keluhan</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminCompTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROFIL -->
+                <section id="secProfile" class="app-section hidden">
+                    <div class="card">
+                        <h3>👤 Profil Akun</h3>
+                        <p>Nama: <b id="uNama">-</b></p>
+                        <p>Email: <b id="uEmail">-</b></p>
+                        <p>Role: <b id="uRole">-</b></p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL ORDER -->
+    <div id="orderModal" class="hidden modal-overlay">
+        <div class="card modal-box">
+            <h2>Buat Pesanan</h2>
+            <form id="orderForm">
+                <label>Pilih Produk</label>
+                <select id="ordProd" required></select>
+                <label>Jumlah (Qty)</label>
+                <input type="number" id="ordQty" value="1" min="1" required>
+                <button type="submit" class="btn-primary" style="margin-top:20px;">KIRIM PESANAN</button>
+                <button type="button" onclick="closeOrderModal()" class="btn-cancel">BATAL</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SDK FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
