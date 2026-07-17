@@ -20,24 +20,22 @@
   button{cursor:pointer; border:none; font-family:inherit;}
 
   /* --- LOGIN SCREEN --- */
-  #loginScreen {
-    display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
-  }
-  .login-container {
-    background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); 
-    width: 100%; max-width: 450px; box-shadow: var(--shadow);
-  }
-  .login-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
-  .logo-placeholder { width: 60px; height: 60px; background: var(--red-mid); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; text-align: center; }
-  .login-info h2 { margin: 0; color: var(--red-deep); font-family: 'Baloo 2'; line-height: 1; }
-  .login-info p { margin: 5px 0 0; font-size: 14px; color: #666; font-style: italic; }
+  #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: var(--bg); }
+  .login-container { background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); width: 100%; max-width: 420px; box-shadow: var(--shadow); }
+  .login-header { text-align: center; margin-bottom: 25px; }
+  .login-header .logo-area { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; }
+  .logo-box { width: 50px; height: 50px; background: var(--red-mid); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 10px; }
+  .login-header h2 { margin: 0; color: var(--red-deep); font-family: 'Baloo 2'; font-size: 24px; }
+  .login-header p { margin: 5px 0 0; font-size: 14px; color: #666; font-style: italic; }
 
   /* --- LAYOUT --- */
   #appWrapper { display: flex; }
-  #sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 1000; border-right: 1px solid rgba(242,169,59,0.2); }
+  #sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 2000; border-right: 1px solid rgba(242,169,59,0.2); }
   #sidebar.active { left: 0; }
+  #sidebarOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; display: none; }
+  #sidebarOverlay.active { display: block; }
+
   #mainContent { flex:1; width: 100%; }
-  
   .top-nav { padding: 12px 20px; background:var(--sidebar-bg); display:flex; align-items:center; justify-content:space-between; position: sticky; top: 0; z-index: 900; border-bottom: 1px solid rgba(242,169,59,0.1); }
   .nav-left, .nav-right { display: flex; align-items: center; gap: 15px; }
   .btn-logout-head { background: var(--red-mid); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; }
@@ -48,7 +46,7 @@
   .stat-card.c1 { background: linear-gradient(135deg, #F2A93B, #D88423); } 
   .stat-card.c2 { background: linear-gradient(135deg, #E13B3B, #C62828); } 
   .stat-card.c3 { background: linear-gradient(135deg, #6E8F5C, #4A633C); } 
-  .stat-value { font-size: 20px; font-weight: 800; margin-top: 5px; }
+  .stat-value { font-size: 18px; font-weight: 800; margin-top: 5px; }
 
   .card { background:var(--card); border-radius:16px; padding:20px; color:var(--text-dark); margin-bottom:20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
   table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }
@@ -57,41 +55,48 @@
 
   .status { padding:4px 8px; border-radius:10px; font-size:9px; font-weight:800; text-transform: uppercase; display: inline-block;}
   .status-selesai { background:#d4edda; color:#155724; }
-  .status-pending, .status-proses { background:#fff3cd; color:#856404; }
+  .status-pending, .status-proses, .status-masuk { background:#fff3cd; color:#856404; }
 
-  .nav-item { padding:15px 20px; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:12px; font-size: 13px; }
+  .nav-item { padding:15px 20px; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:12px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
   .nav-item:hover, .nav-item.active { background:var(--red-mid); color:#fff; }
 
   input, select, textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-top:5px; font-family: inherit;}
 
-  @media (min-width: 992px) { #sidebar { left:0; } #mainContent { margin-left: 260px; } }
+  @media (min-width: 992px) { 
+    #sidebar { left:0; } 
+    #mainContent { margin-left: 260px; } 
+    #sidebarOverlay { display: none !important; }
+  }
 </style>
 </head>
 <body>
 
+<!-- Overlay untuk menutup sidebar di mobile -->
+<div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <div id="loginScreen">
     <div class="login-container">
         <div class="login-header">
-            <div class="logo-placeholder">BOCI<br>LOGO</div>
-            <div class="login-info">
+            <div class="logo-area">
+                <div class="logo-box">BOCI<br>URAT</div>
                 <h2>Login Reseller</h2>
-                <p>semangat berjualan!</p>
             </div>
+            <p>semangat berjualan!</p>
         </div>
         <div class="tabs" style="display:flex; gap:10px; margin-bottom:20px;">
-            <button onclick="switchAuth('login')" id="tLog" style="flex:1; padding:10px; border-radius:8px; background:var(--red-mid); color:#fff; font-weight: 700;">Masuk</button>
-            <button onclick="switchAuth('register')" id="tReg" style="flex:1; padding:10px; border-radius:8px; background:#eee; font-weight: 700;">Daftar</button>
+            <button onclick="switchAuth('login')" id="tLog" style="flex:1; padding:10px; border-radius:8px; background:var(--red-mid); color:#fff; font-weight:700;">Masuk</button>
+            <button onclick="switchAuth('register')" id="tReg" style="flex:1; padding:10px; border-radius:8px; background:#eee; font-weight:700;">Daftar</button>
         </div>
         <form id="loginForm">
             <input type="email" id="loginEmail" placeholder="Email" required>
             <input type="password" id="loginPassword" placeholder="Kata Sandi" required style="margin-top:10px;">
-            <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:12px; border-radius:8px; margin-top:20px; font-weight:700;">MASUK KE DASHBOARD</button>
+            <button type="submit" style="width:100%; background:var(--red-mid); color:#fff; padding:12px; border-radius:8px; margin-top:20px; font-weight:700;">MASUK</button>
         </form>
         <form id="registerForm" class="hidden">
             <input type="text" id="regNama" placeholder="Nama Lengkap" required>
             <input type="email" id="regEmail" placeholder="Email" required style="margin-top:10px;">
-            <input type="password" id="regPassword" placeholder="Buat Password" required style="margin-top:10px;">
-            <button type="submit" style="width:100%; background:var(--gold); color:var(--red-deep); padding:12px; border-radius:8px; margin-top:20px; font-weight:700;">DAFTAR SEKARANG</button>
+            <input type="password" id="regPassword" placeholder="Password" required style="margin-top:10px;">
+            <button type="submit" style="width:100%; background:var(--gold); color:var(--red-deep); padding:12px; border-radius:8px; margin-top:20px; font-weight:700;">DAFTAR</button>
         </form>
     </div>
 </div>
@@ -104,9 +109,9 @@
 
   <main id="mainContent">
     <header class="top-nav">
-      <div class="nav-left"><button onclick="toggleSidebar()" style="background:none; color:var(--gold); font-size:20px;">☰</button><span id="sectionTitle" style="font-weight:700; color:var(--gold);">Dashboard</span></div>
+      <div class="nav-left"><button onclick="toggleSidebar()" style="background:none; color:var(--gold); font-size:24px;">☰</button><span id="sectionTitle" style="font-weight:700; color:var(--gold);">Dashboard</span></div>
       <div class="nav-right">
-        <span id="headerGreeting" style="font-size:12px;">Halo, User</span>
+        <span id="headerGreeting" style="font-size:11px; display:none;">Halo, User</span>
         <button onclick="logout()" class="btn-logout-head">KELUAR</button>
       </div>
     </header>
@@ -116,75 +121,89 @@
       <!-- DASHBOARD RESELLER -->
       <section id="secResellerDashboard" class="app-section hidden">
         <div class="stat-grid">
-            <div class="stat-card c1"><div>QTY PEMBELIAN</div><div id="resQty" class="stat-value">0</div></div>
-            <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp0</div></div>
-            <div class="stat-card c3"><div>POIN SAYA</div><div id="resPoin" class="stat-value">0</div></div>
+            <div class="stat-card c1"><div>QTY BELI</div><div id="resQty" class="stat-value">0</div></div>
+            <div class="stat-card c2"><div>TOTAL</div><div id="resTotal" class="stat-value">Rp0</div></div>
+            <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
         </div>
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-family:'Baloo 2'; color:var(--red-deep);">📊 Rincian Pembelian</h3>
-                <button onclick="openOrderModal()" style="background:var(--gold); color:var(--red-deep); padding:8px 15px; border-radius:8px; font-weight:700; font-size:11px;">+ PESAN BARU</button>
+                <h3 style="margin:0; font-family:'Baloo 2'; color:var(--red-deep); font-size:16px;">📊 Riwayat Pesanan</h3>
+                <button onclick="openOrderModal()" style="background:var(--gold); color:var(--red-deep); padding:8px 12px; border-radius:8px; font-weight:700; font-size:10px;">+ PESAN</button>
             </div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>Nama Barang</th><th>Qty</th><th>Tanggal</th><th>Total</th><th>Status</th></tr></thead>
-                    <tbody id="resellerDetailTable"></tbody>
-                </table>
-            </div>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerDetailTable"></tbody></table></div>
         </div>
       </section>
 
       <!-- RETUR BARANG (RESELLER) -->
       <section id="secResellerReturn" class="app-section hidden">
         <div class="card">
-            <h3>📦 Ajukan Retur Barang</h3>
+            <h3>📦 Ajukan Retur</h3>
             <form id="returnForm">
                 <input type="text" id="retProd" placeholder="Nama Produk" required>
-                <textarea id="retReason" placeholder="Alasan Retur" required style="height:80px; margin-top:10px;"></textarea>
-                <input type="tel" id="retHp" placeholder="Nomor HP Aktif" required style="margin-top:10px;">
-                <button type="submit" style="background:var(--red-mid); color:#fff; padding:12px; width:100%; border-radius:8px; margin-top:15px; font-weight:700;">KIRIM PENGAJUAN RETUR</button>
+                <textarea id="retReason" placeholder="Alasan Retur" required style="height:70px; margin-top:10px;"></textarea>
+                <input type="tel" id="retHp" placeholder="No. HP" required style="margin-top:10px;">
+                <button type="submit" style="background:var(--red-mid); color:#fff; padding:12px; width:100%; border-radius:8px; margin-top:15px; font-weight:700;">KIRIM RETUR</button>
             </form>
         </div>
         <div class="card">
-            <h3>📑 Riwayat Retur</h3>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>No. Retur</th><th>Produk</th><th>Alasan</th><th>Tanggal</th><th>Status</th></tr></thead>
-                    <tbody id="resellerReturnTable"></tbody>
-                </table>
-            </div>
+            <h3>📑 Riwayat Retur Anda</h3>
+            <div style="overflow-x: auto;"><table><thead><tr><th>No. Retur</th><th>Produk</th><th>Status</th></tr></thead><tbody id="resellerReturnTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- LAPORAN KELUHAN (RESELLER) -->
+      <section id="secResellerComplaint" class="app-section hidden">
+        <div class="card">
+            <h3>📢 Kirim Keluhan</h3>
+            <form id="complaintForm">
+                <textarea id="compText" placeholder="Tulis keluhan..." required style="height:100px;"></textarea>
+                <input type="text" id="compName" placeholder="Nama Anda" required style="margin-top:10px;">
+                <button type="submit" style="background:var(--red-mid); color:#fff; padding:12px; width:100%; border-radius:8px; margin-top:15px; font-weight:700;">KIRIM LAPORAN</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3>📑 Riwayat Keluhan</h3>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Tiket</th><th>Keluhan</th><th>Status</th></tr></thead><tbody id="resellerCompTable"></tbody></table></div>
         </div>
       </section>
 
       <!-- ADMIN - DASHBOARD -->
       <section id="secAdminDashboard" class="app-section hidden">
         <div class="stat-grid">
-            <div class="stat-card c1"><div>ORDER SELESAI</div><div id="admQty" class="stat-value">0</div></div>
-            <div class="stat-card c2"><div>TOTAL RUPIAH</div><div id="admTotal" class="stat-value">Rp0</div></div>
+            <div class="stat-card c1"><div>ORDERS</div><div id="admQty" class="stat-value">0</div></div>
+            <div class="stat-card c2"><div>OMZET</div><div id="admTotal" class="stat-value">Rp0</div></div>
             <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
         </div>
         <div class="card">
-            <h3>📦 Antrean Pesanan Reseller</h3>
-            <div style="overflow-x: auto;"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Qty</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="adminOrdersTable"></tbody></table></div>
+            <h3>📦 Pesanan Masuk</h3>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Qty</th><th>Aksi</th></tr></thead><tbody id="adminOrdersTable"></tbody></table></div>
         </div>
       </section>
 
       <!-- ADMIN - RETURAN MASUK -->
       <section id="secAdminReturn" class="app-section hidden">
         <div class="card">
-            <h3>📥 Daftar Returan Masuk</h3>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>No. Retur</th><th>Reseller</th><th>Produk / Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
-                    <tbody id="adminReturnTable"></tbody>
-                </table>
-            </div>
+            <h3>📥 Returan Masuk</h3>
+            <div style="overflow-x: auto;"><table><thead><tr><th>No</th><th>Reseller</th><th>Produk</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div>
         </div>
       </section>
 
-      <!-- SECTIONS LAIN (COMPLAINT & PROFILE) SAMA SEPERTI SEBELUMNYA -->
+      <!-- ADMIN - KELUHAN -->
+      <section id="secAdminComplaint" class="app-section hidden">
+        <div class="card">
+            <h3>📢 Keluhan Reseller</h3>
+            <div style="overflow-x: auto;"><table><thead><tr><th>Tiket</th><th>Pelapor</th><th>Isi</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <!-- PROFIL -->
       <section id="secProfile" class="app-section hidden">
-        <div class="card"><h3>👤 Profil Akun</h3><div id="profileDisplay"><p>Nama: <b id="uNama">-</b></p><p>Email: <b id="uEmail">-</b></p></div></div>
+        <div class="card">
+          <h3>👤 Profil Akun</h3>
+          <p>Nama: <b id="uNama">-</b></p>
+          <p>Email: <b id="uEmail">-</b></p>
+          <p>Role: <b id="uRole">-</b></p>
+        </div>
       </section>
 
     </div>
@@ -192,7 +211,7 @@
 </div>
 
 <!-- MODAL PESAN -->
-<div id="orderModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+<div id="orderModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:3000; display:flex; align-items:center; justify-content:center; padding:20px;">
     <div class="card" style="width:100%; max-width:400px;">
         <h2 style="font-family:'Baloo 2'">Buat Pesanan</h2>
         <form id="orderForm">
@@ -209,7 +228,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // Konfigurasi Firebase tetap sama
   const firebaseConfig = {
     apiKey: "AIzaSyCkH8ACVHoRxYru1g9oPa9tMD4yBUYQcZM",
     authDomain: "member-reseller-boci.firebaseapp.com",
@@ -244,6 +262,7 @@
     document.getElementById("headerGreeting").innerText = "Halo, " + currentUser.nama;
     document.getElementById("uNama").innerText = currentUser.nama;
     document.getElementById("uEmail").innerText = currentUser.email;
+    document.getElementById("uRole").innerText = currentUser.role.toUpperCase();
 
     renderSidebar();
     syncCatalog();
@@ -252,10 +271,12 @@
         showSection('secAdminDashboard');
         loadAdminData();
         loadAdminReturns();
+        loadAdminComplaints();
     } else {
         showSection('secResellerDashboard');
         loadResellerData();
         loadResellerReturns();
+        loadResellerComplaints();
     }
   }
 
@@ -266,18 +287,43 @@
         menu = `
             <div class="nav-item active" id="n-secAdminDashboard" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
             <div class="nav-item" id="n-secAdminReturn" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+            <div class="nav-item" id="n-secAdminComplaint" onclick="showSection('secAdminComplaint')">📢 Laporan Keluhan</div>
         `;
     } else {
         menu = `
             <div class="nav-item active" id="n-secResellerDashboard" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
             <div class="nav-item" id="n-secResellerReturn" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+            <div class="nav-item" id="n-secResellerComplaint" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>
         `;
     }
     menu += `<div class="nav-item" id="n-secProfile" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
     nav.innerHTML = menu;
   }
 
-  /* --- LOGIKA POIN & TRANSAKSI --- */
+  /* --- SISTEM UI --- */
+  function showSection(id) {
+    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if(document.getElementById('n-'+id)) document.getElementById('n-'+id).classList.add('active');
+    
+    // Otomatis tutup sidebar setelah klik menu (penting untuk mobile)
+    toggleSidebar(false);
+  }
+
+  function toggleSidebar(force) {
+    const side = document.getElementById("sidebar");
+    const over = document.getElementById("sidebarOverlay");
+    if (force === false) {
+        side.classList.remove("active");
+        over.classList.remove("active");
+    } else {
+        side.classList.toggle("active");
+        over.classList.toggle("active");
+    }
+  }
+
+  /* --- DATA TRANSAKSI & POIN --- */
   function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).orderBy("createdAt", "desc").onSnapshot(snap => {
         let q=0, t=0, p=0;
@@ -285,9 +331,9 @@
             const o = doc.data();
             if(o.status === 'selesai') { 
                 q += o.jumlah; t += o.total; 
-                p += Math.floor(o.total / 1000); // 1 Poin per 1000
+                p += Math.floor(o.total / 1000); 
             }
-            return `<tr><td><b>${o.produk}</b></td><td>${o.jumlah}</td><td>${o.createdAt?.toDate().toLocaleDateString() || '-'}</td><td>Rp${o.total.toLocaleString()}</td><td><span class="status status-${o.status}">${o.status}</span></td></tr>`;
+            return `<tr><td><b>${o.produk}</b></td><td>${o.jumlah}</td><td>Rp${o.total.toLocaleString()}</td><td><span class="status status-${o.status}">${o.status}</span></td></tr>`;
         }).join('');
         document.getElementById("resQty").innerText = q;
         document.getElementById("resTotal").innerText = "Rp" + t.toLocaleString();
@@ -300,11 +346,8 @@
         let q=0, t=0, p=0;
         document.getElementById("adminOrdersTable").innerHTML = snap.docs.map(doc => {
             const o = doc.data();
-            if(o.status === 'selesai') { 
-                q += o.jumlah; t += o.total; 
-                p += Math.floor(o.total / 1000); 
-            }
-            return `<tr><td>${o.resellerName}</td><td>${o.produk}</td><td>${o.jumlah}</td><td>Rp${o.total.toLocaleString()}</td><td><span class="status status-${o.status}">${o.status}</span></td><td>${o.status === 'pending' ? `<button onclick="updateStatus('${doc.id}', 'selesai')" style="font-size:10px; background:green; color:#fff; border-radius:4px; padding:5px;">Selesaikan</button>` : '✅'}</td></tr>`;
+            if(o.status === 'selesai') { q += o.jumlah; t += o.total; p += Math.floor(o.total / 1000); }
+            return `<tr><td>${o.resellerName}</td><td>${o.produk}</td><td>${o.jumlah}</td><td>${o.status === 'pending' ? `<button onclick="db.collection('orders').doc('${doc.id}').update({status:'selesai'})" style="font-size:9px; background:green; color:#fff; border-radius:4px; padding:4px;">Selesai</button>` : '✅'}</td></tr>`;
         }).join('');
         document.getElementById("admQty").innerText = q;
         document.getElementById("admTotal").innerText = "Rp" + t.toLocaleString();
@@ -312,32 +355,24 @@
     });
   }
 
-  /* --- LOGIKA RETUR --- */
+  /* --- SISTEM RETUR --- */
   document.getElementById("returnForm").onsubmit = async (e) => {
     e.preventDefault();
     const snap = await db.collection("returns").get();
     const nextId = (snap.size + 1).toString().padStart(5, '0');
-
     await db.collection("returns").add({
-        returnId: nextId,
-        produk: document.getElementById("retProd").value,
-        alasan: document.getElementById("retReason").value,
-        hp: document.getElementById("retHp").value,
-        resellerId: currentUser.id,
-        resellerName: currentUser.nama,
-        status: "Proses",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        returnId: nextId, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value,
+        hp: document.getElementById("retHp").value, resellerId: currentUser.id, resellerName: currentUser.nama,
+        status: "Proses", createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    alert("Pengajuan Retur Berhasil! No. Retur: " + nextId);
-    e.target.reset();
+    alert("Retur dikirim! No: " + nextId); e.target.reset();
   };
 
   function loadResellerReturns() {
     db.collection("returns").where("resellerId", "==", currentUser.id).orderBy("createdAt", "desc").onSnapshot(snap => {
         document.getElementById("resellerReturnTable").innerHTML = snap.docs.map(doc => {
             const r = doc.data();
-            return `<tr><td><b>#${r.returnId}</b></td><td>${r.produk}</td><td>${r.alasan}</td><td>${r.createdAt?.toDate().toLocaleDateString() || '-'}</td><td><span class="status status-proses">${r.status}</span></td></tr>`;
+            return `<tr><td>#${r.returnId}</td><td>${r.produk}</td><td><span class="status status-proses">${r.status}</span></td></tr>`;
         }).join('');
     });
   }
@@ -346,20 +381,42 @@
     db.collection("returns").orderBy("createdAt", "desc").onSnapshot(snap => {
         document.getElementById("adminReturnTable").innerHTML = snap.docs.map(doc => {
             const r = doc.data();
-            return `<tr>
-                <td><b>#${r.returnId}</b></td>
-                <td>${r.resellerName}</td>
-                <td><b>${r.produk}</b><br><small>${r.alasan}</small></td>
-                <td><span class="status status-proses">${r.status}</span></td>
-                <td>
-                    ${r.status === 'Proses' ? `<button onclick="db.collection('returns').doc('${doc.id}').update({status:'Selesai'})" style="font-size:10px; background:blue; color:#fff; border-radius:4px;">Selesaikan</button>` : '✅'}
-                </td>
-            </tr>`;
+            return `<tr><td>#${r.returnId}</td><td>${r.resellerName}</td><td>${r.produk}</td><td>${r.status}</td><td>${r.status==='Proses'?`<button onclick="db.collection('returns').doc('${doc.id}').update({status:'Selesai'})" style="font-size:9px; background:blue; color:#fff; border-radius:4px;">Selesai</button>`:'✅'}</td></tr>`;
         }).join('');
     });
   }
 
-  /* --- SISTEM DASAR --- */
+  /* --- SISTEM KELUHAN --- */
+  document.getElementById("complaintForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const snap = await db.collection("complaints").get();
+    const nextId = (snap.size + 1).toString().padStart(5, '0');
+    await db.collection("complaints").add({
+        ticketId: nextId, content: document.getElementById("compText").value, name: document.getElementById("compName").value,
+        resellerId: currentUser.id, status: "Masuk", createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Keluhan dikirim! Tiket: #" + nextId); e.target.reset();
+  };
+
+  function loadResellerComplaints() {
+    db.collection("complaints").where("resellerId", "==", currentUser.id).orderBy("createdAt", "desc").onSnapshot(snap => {
+        document.getElementById("resellerCompTable").innerHTML = snap.docs.map(doc => {
+            const c = doc.data();
+            return `<tr><td>#${c.ticketId}</td><td>${c.content.substring(0,20)}...</td><td><span class="status status-masuk">${c.status}</span></td></tr>`;
+        }).join('');
+    });
+  }
+
+  function loadAdminComplaints() {
+    db.collection("complaints").orderBy("createdAt", "desc").onSnapshot(snap => {
+        document.getElementById("adminCompTable").innerHTML = snap.docs.map(doc => {
+            const c = doc.data();
+            return `<tr><td>#${c.ticketId}</td><td>${c.name}</td><td>${c.content}</td><td><select onchange="db.collection('complaints').doc('${doc.id}').update({status:this.value})" style="font-size:10px;"><option value="">Status...</option><option value="Selesai">Selesai</option></select></td></tr>`;
+        }).join('');
+    });
+  }
+
+  /* --- BASE AUTH --- */
   function syncCatalog() {
     db.collection("products").onSnapshot(snap => {
         catalog = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -374,22 +431,13 @@
     document.getElementById("tReg").style.background = m==='register' ? 'var(--red-mid)' : '#eee';
   }
 
-  function showSection(id) {
-    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if(document.getElementById('n-'+id)) document.getElementById('n-'+id).classList.add('active');
-  }
-
-  function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
   function logout() { if(confirm("Keluar?")) auth.signOut(); }
   function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); }
   function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
-  function updateStatus(id, s) { db.collection("orders").doc(id).update({status: s}); }
 
   document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
-    auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(a => alert("Gagal Login: " + a.message));
+    auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(a => alert(a.message));
   };
 
   document.getElementById("registerForm").onsubmit = async (e) => {
@@ -400,7 +448,6 @@
             nama: document.getElementById("regNama").value, email: document.getElementById("regEmail").value,
             role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Berhasil mendaftar! Selamat bergabung.");
     } catch(a) { alert(a.message); }
   };
 
@@ -409,14 +456,11 @@
     const pid = document.getElementById("ordProd").value;
     const prod = catalog.find(x => x.id === pid);
     const qty = parseInt(document.getElementById("ordQty").value);
-    const total = prod.harga * qty;
-
     await db.collection("orders").add({
-        resellerId: currentUser.id, resellerName: currentUser.nama,
-        produk: prod.nama, jumlah: qty, total: total,
+        resellerId: currentUser.id, resellerName: currentUser.nama, produk: prod.nama, jumlah: qty, total: prod.harga * qty,
         status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    alert("Pesanan berhasil dikirim ke Admin!"); closeOrderModal();
+    alert("Dipesan!"); closeOrderModal();
   };
 </script>
 </body>
