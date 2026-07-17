@@ -1,57 +1,47 @@
 :root {
     --bg: #1C120D; --sidebar-bg: #2A1912; --card: #FFF7EC;
-    --red-deep: #7A1717; --red-mid: #C62828; --gold: #F2A93B;
-    --text-cream: #F7EFE3; --text-dark: #2B1B12; --radius: 16px;
+    --red-mid: #C62828; --gold: #F2A93B; --text-dark: #2B1B12;
 }
-* { box-sizing: border-box; }
-body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-cream); min-height: 100vh; }
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; }
 .hidden { display: none !important; }
 
-/* LOGIN SCREEN */
+/* LOGIN */
 #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-.login-container { background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); width: 100%; max-width: 420px; text-align: center; }
-.logo-area { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; }
-.logo-box { width: 55px; height: 55px; background: var(--red-mid); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; }
-.login-header h2 { font-family: 'Baloo 2'; color: var(--red-deep); margin: 0; }
-.login-header p { font-size: 14px; color: #666; font-style: italic; margin-bottom: 20px; }
+.login-container { background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); width: 100%; max-width: 400px; text-align: center; }
+.logo-box { background: var(--red-mid); color: #fff; width: 60px; height: 60px; margin: 0 auto 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; }
 
-.auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-.auth-tabs button { flex: 1; padding: 10px; border-radius: 8px; border: none; background: #eee; font-weight: 700; cursor: pointer; }
-.auth-tabs button.active { background: var(--red-mid); color: #fff; }
-
-/* SIDEBAR & NAV */
-#sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 2000; border-right: 1px solid rgba(242,169,59,0.2); transition: 0.3s; }
+/* LAYOUT */
+#sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 2000; transition: 0.3s; }
 #sidebar.active { left: 0; }
 #sidebarOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1500; display: none; }
 #sidebarOverlay.active { display: block; }
-#mainContent { width: 100%; }
-.top-nav { padding: 15px 20px; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; }
-.nav-item { padding: 15px 20px; color: #CBB9A6; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-.nav-item.active { background: var(--red-mid); color: #fff; }
+#mainContent { width: 100%; transition: 0.3s; }
 
-/* STATS & CARDS */
-.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-.stat-card { padding: 15px; border-radius: 16px; color: #fff; }
+.top-nav { padding: 15px 20px; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: space-between; }
+.menu-toggle { background: none; border: none; color: var(--gold); font-size: 24px; cursor: pointer; }
+
+/* STATS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px; }
+.stat-card { padding: 15px; border-radius: 16px; font-weight: 700; text-align: center; }
 .stat-card.c1 { background: #D88423; } .stat-card.c2 { background: #C62828; } .stat-card.c3 { background: #4A633C; }
-.stat-value { font-size: 18px; font-weight: 800; margin-top: 5px; }
-.card { background: var(--card); border-radius: 16px; padding: 20px; color: var(--text-dark); margin-bottom: 20px; }
 
-/* BUTTONS */
-.btn-primary { background: var(--red-mid); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; }
-.btn-gold { background: var(--gold); color: var(--red-deep); border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
-.btn-logout { background: var(--red-mid); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; border: none; }
-.btn-sm-gold { background: var(--gold); color: var(--red-deep); padding: 8px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; border: none; cursor: pointer; }
-
-/* TABLES */
-.table-container { overflow-x: auto; }
+/* CARD & TABLES */
+.card { background: var(--card); border-radius: 16px; padding: 20px; color: var(--text-dark); margin: 0 20px 20px; }
+.table-container { overflow-x: auto; margin-top: 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; font-size: 10px; color: #777; }
+th { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
 td { padding: 10px; border-bottom: 1px solid #eee; }
 
-input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-top: 5px; font-family: inherit; }
+/* FORM ELEMENTS */
+input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; }
+.btn-primary { background: var(--red-mid); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 15px; }
+.btn-gold { background: var(--gold); border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
+.btn-sm-gold { background: var(--gold); border: none; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
+
+.status-proses { color: orange; font-weight: bold; }
+.status-selesai { color: green; font-weight: bold; }
 
 @media (min-width: 992px) {
-    #sidebar { left: 0; }
-    #mainContent { margin-left: 260px; }
-    .menu-toggle { display: none; }
+    #sidebar { left: 0; } #mainContent { margin-left: 260px; } .menu-toggle { display: none; }
 }
