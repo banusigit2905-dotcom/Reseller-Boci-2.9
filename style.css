@@ -6,67 +6,49 @@
 body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; }
 .hidden { display: none !important; }
 
-/* --- PERBAIKAN TOMBOL LOGIN (ADA GARIS & BERWARNA) --- */
+/* LOGIN SCREEN */
 #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
 .login-container { background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
 
-.auth-tabs { 
-    display: flex; gap: 0; margin: 25px 0; 
-    border: 2px solid var(--red-mid); /* Garis Pembatas */
-    border-radius: 12px; overflow: hidden; 
-}
-.tab-btn { 
-    flex: 1; border: none; padding: 12px; cursor: pointer; 
-    font-weight: 800; font-size: 14px; background: #fff; color: var(--red-mid);
-}
-.tab-btn.active { 
-    background: var(--red-mid); color: #fff; /* Warna saat aktif */
-}
+.auth-tabs { display: flex; gap: 0; margin: 25px 0; border: 2px solid var(--red-mid); border-radius: 12px; overflow: hidden; }
+.tab-btn { flex: 1; border: none; padding: 12px; cursor: pointer; font-weight: 800; font-size: 14px; background: #fff; color: var(--red-mid); }
+.tab-btn.active { background: var(--red-mid); color: #fff; }
 
-/* --- PERBAIKAN POSISI NOTIFIKASI DI TENGAH HEADER --- */
-.top-nav { 
-    padding: 15px 20px; background: var(--sidebar-bg); 
-    display: flex; align-items: center; 
-    justify-content: space-between; /* Membuat 3 kolom: kiri, tengah, kanan */
-}
+/* NAV & SIDEBAR */
+.top-nav { padding: 15px 20px; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: space-between; }
 .nav-left { display: flex; align-items: center; gap: 10px; width: 30%; }
-.nav-center { 
-    display: flex; gap: 15px; justify-content: center; 
-    width: 40%; /* Mengambil area tengah */
-}
+.nav-center { display: flex; gap: 15px; justify-content: center; width: 40%; }
 .nav-right { display: flex; justify-content: flex-end; width: 30%; }
 
 .notif-item { position: relative; font-size: 18px; }
-.badge { 
-    position: absolute; top: -5px; right: -8px; 
-    background: var(--red-mid); color: #fff; 
-    font-size: 9px; padding: 2px 6px; border-radius: 50%; font-weight: 800; 
-}
+.badge { position: absolute; top: -5px; right: -8px; background: var(--red-mid); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 50%; font-weight: 800; }
 
-/* SIDEBAR & DIVIDER */
 #sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 2000; transition: 0.3s; }
 #sidebar.active { left: 0; }
 .nav-item { padding: 15px 20px; color: #CBB9A6; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
 .nav-item:hover, .nav-item.active { background: var(--red-mid); color: #fff; }
 
-/* TABEL & PEMBATAS BOX (CARD) */
+/* CARDS & TABLES */
 .card { background: var(--card); border-radius: 16px; padding: 20px; color: var(--text-dark); margin: 0 20px 20px; }
 .card-border { border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-/* STATS */
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px; }
 .stat-card { padding: 15px; border-radius: 16px; color: #fff; text-align: center; }
 .stat-value { font-size: 13px; font-weight: 800; margin-top: 5px; }
 .stat-card.c1 { background: #D88423; } .stat-card.c2 { background: #C62828; } .stat-card.c3 { background: #4A633C; }
 
-/* TABEL */
 .table-container { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 11px; }
 th { text-align: left; padding: 10px; border-bottom: 2px solid #ddd; }
 td { padding: 10px; border-bottom: 1px solid #eee; }
 
-input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; }
-.btn-primary { background: var(--red-mid); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
+input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
+.btn-primary { background: var(--red-mid); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; }
+.btn-secondary { background: #666; color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+/* MODAL FIX */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-box { max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; margin: 0; }
 
 @media (min-width: 992px) {
     #sidebar { left: 0; } #mainContent { margin-left: 260px; } .menu-toggle { display: none; }
