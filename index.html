@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
     <div id="loginScreen">
@@ -42,7 +41,7 @@
             <header class="top-nav">
                 <div class="nav-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <span>Dashboard</span>
+                    <span>OKTSHOP17</span>
                 </div>
                 <div id="adminNotifHeader" class="nav-center hidden">
                     <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
@@ -66,12 +65,7 @@
                             <h3>Riwayat Pesanan</h3>
                             <button onclick="openOrderModal()" style="padding:8px 15px; background:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+ PESAN BARU</button>
                         </div>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
-                                <tbody id="resellerOrderTable"></tbody>
-                            </table>
-                        </div>
+                        <div class="table-container"><table><thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerOrderTable"></tbody></table></div>
                     </div>
                 </section>
 
@@ -83,85 +77,51 @@
                     </div>
                     <div class="card card-border">
                         <h3>Pesanan Masuk</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead>
-                                <tbody id="adminOrderTable"></tbody>
-                            </table>
-                        </div>
+                        <div class="table-container"><table><thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminOrderTable"></tbody></table></div>
                     </div>
                 </section>
 
-                <!-- PROFIL AKUN (EMAIL TIDAK BISA EDIT) -->
                 <section id="secProfile" class="app-section hidden">
                     <div class="card card-border">
                         <h3>Profil Akun</h3>
                         <form id="editProfileForm">
-                            <label style="font-size:12px; color:gray;">Email (Tetap)</label>
-                            <input type="text" id="profEmail" readonly style="background:#eee;">
-                            <label style="font-size:12px; color:gray; margin-top:10px; display:block;">Nama</label>
-                            <input type="text" id="profNama" required>
-                            <label style="font-size:12px; color:gray; margin-top:10px; display:block;">No. WhatsApp</label>
-                            <input type="tel" id="profHp" required>
+                            <label style="font-size:11px;color:gray">Email (Tetap)</label><input type="text" id="profEmail" readonly style="background:#eee;">
+                            <label style="font-size:11px;color:gray;margin-top:10px;display:block">Nama</label><input type="text" id="profNama" required>
+                            <label style="font-size:11px;color:gray;margin-top:10px;display:block">WhatsApp</label><input type="tel" id="profHp" required>
                             <button type="submit" class="btn-primary">UPDATE PROFIL</button>
                         </form>
                     </div>
                 </section>
 
-                <!-- BAGIAN RETUR & KELUHAN (TETAP SAMA SEPERTI SEBELUMNYA) -->
-                <section id="secResellerReturn" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>Ajukan Retur Barang</h3>
-                        <form id="resellerReturnForm"><input type="text" id="retProd" placeholder="Nama Produk" required><textarea id="retReason" placeholder="Alasan Retur" required></textarea><input type="tel" id="retHp" placeholder="No. HP" required><button type="submit" class="btn-primary">KIRIM RETUR</button></form>
-                    </div>
-                </section>
-                <section id="secAdminReturn" class="app-section hidden">
-                    <div class="card card-border"><h3>Daftar Returan</h3><div class="table-container"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div></div>
-                </section>
-                <section id="secResellerComplaint" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>Laporkan Keluhan</h3>
-                        <form id="resellerComplaintForm"><textarea id="compText" placeholder="Isi Keluhan..." required></textarea><input type="text" id="compName" placeholder="Nama" required><input type="tel" id="compHp" placeholder="No HP" required><button type="submit" class="btn-primary">KIRIM LAPORAN</button></form>
-                    </div>
-                </section>
-                <section id="secAdminComplaint" class="app-section hidden">
-                    <div class="card card-border"><h3>Keluhan Reseller</h3><div class="table-container"><table><thead><tr><th>Pelapor</th><th>Isi</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div></div>
-                </section>
+                <!-- Retur & Keluhan -->
+                <section id="secResellerReturn" class="app-section hidden"><div class="card card-border"><h3>Retur Barang</h3><form id="resellerReturnForm"><input type="text" id="retProd" placeholder="Produk" required><textarea id="retReason" placeholder="Alasan" required></textarea><input type="tel" id="retHp" placeholder="No HP" required><button type="submit" class="btn-primary">KIRIM</button></form></div><div class="card card-border"><h3>Riwayat Retur</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Produk</th><th>Status</th></tr></thead><tbody id="resellerReturnHistory"></tbody></table></div></div></section>
+                <section id="secAdminReturn" class="app-section hidden"><div class="card card-border"><h3>Daftar Returan</h3><div class="table-container"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div></div></section>
+                <section id="secResellerComplaint" class="app-section hidden"><div class="card card-border"><h3>Laporan Keluhan</h3><form id="resellerComplaintForm"><textarea id="compText" placeholder="Keluhan..." required></textarea><input type="text" id="compName" placeholder="Nama" required><input type="tel" id="compHp" placeholder="No HP" required><button type="submit" class="btn-primary">KIRIM</button></form></div><div class="card card-border"><h3>Riwayat Keluhan</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Isi</th><th>Status</th></tr></thead><tbody id="resellerCompHistory"></tbody></table></div></div></section>
+                <section id="secAdminComplaint" class="app-section hidden"><div class="card card-border"><h3>Keluhan Masuk</h3><div class="table-container"><table><thead><tr><th>Pelapor</th><th>Isi</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div></div></section>
             </div>
         </main>
     </div>
 
-    <!-- MODAL ORDER MULTI-STEP -->
+    <!-- MODAL ORDER -->
     <div id="orderModal" class="hidden modal-overlay">
-        <div class="card modal-box">
-            <!-- STEP 1: PILIH PRODUK -->
+        <div class="modal-box">
             <div id="orderStep1">
-                <h3>Pesan Produk</h3>
+                <h3>Pilih Produk</h3>
                 <select id="ordProdSelect"></select>
                 <input type="number" id="ordQtyInput" value="1" min="1">
-                <button type="button" onclick="addToCart()" class="btn-primary" style="background:#4A633C;">+ Tambah Produk</button>
-                
-                <table style="margin-top:15px; font-size:10px;">
-                    <thead><tr><th>Produk</th><th>Qty</th><th>Subtotal</th><th>X</th></tr></thead>
-                    <tbody id="cartTableBody"></tbody>
-                </table>
+                <button type="button" onclick="addToCart()" class="btn-primary" style="background:#4A633C;">+ Tambah ke List</button>
+                <table style="margin-top:15px;"><tbody id="cartTableBody"></tbody></table>
                 <div id="cartTotalText" style="text-align:right; font-weight:bold; margin:10px 0;">Total: Rp 0</div>
-                
                 <button type="button" onclick="goToStep2()" class="btn-primary">PESAN SEKARANG</button>
                 <button type="button" onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
             </div>
-
-            <!-- STEP 2: ISI DATA -->
             <div id="orderStep2" class="hidden">
-                <h3>Data Pengiriman</h3>
+                <h3>Data Penerima</h3>
                 <form id="orderFormFinal">
-                    <input type="text" id="ordCustomer" placeholder="Nama Pemesan" required>
-                    <input type="tel" id="ordHp" placeholder="No. HP Pemesan" required>
-                    <select id="ordPayment" required>
-                        <option value="Transfer">Transfer</option>
-                        <option value="COD">COD</option>
-                    </select>
-                    <button type="submit" class="btn-primary">KIRIM PESANAN</button>
+                    <input type="text" id="ordCustomer" placeholder="Nama Penerima" required>
+                    <input type="tel" id="ordHp" placeholder="No HP Penerima" required>
+                    <select id="ordPayment"><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
+                    <button type="submit" class="btn-primary">KIRIM KE WHATSAPP</button>
                     <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
                 </form>
             </div>
