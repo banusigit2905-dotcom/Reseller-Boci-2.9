@@ -54,6 +54,7 @@ function renderSidebar() {
     let menu = '';
     if (currentUser.role === 'admin') {
         menu = `<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+                <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
                 <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
                 <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>`;
     } else {
@@ -65,7 +66,7 @@ function renderSidebar() {
     nav.innerHTML = menu;
 }
 
-// LOGIKA ORDER KERANJANG
+// LOGIKA KERANJANG
 function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 function addToCart() {
@@ -90,7 +91,7 @@ function removeFromCart(index) { cart.splice(index, 1); renderCart(); }
 function goToStep2() { if (cart.length === 0) return alert("Pilih produk dulu!"); document.getElementById("orderStep1").classList.add("hidden"); document.getElementById("orderStep2").classList.remove("hidden"); }
 function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
 
-// ORDER FINAL & WHATSAPP
+// ORDER & WHATSAPP
 document.getElementById("orderFormFinal").onsubmit = async (e) => {
     e.preventDefault();
     const customer = document.getElementById("ordCustomer").value;
@@ -98,7 +99,6 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
     const payment = document.getElementById("ordPayment").value;
     const totalBayar = cart.reduce((sum, i) => sum + i.subtotal, 0);
     const ringkasan = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
-
     try {
         await db.collection("orders").add({
             resellerId: currentUser.id, resellerName: currentUser.nama,
@@ -109,18 +109,18 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
         let pesan = `*PESANAN BARU*\nReseller: ${currentUser.nama}\nPenerima: ${customer}\nHP: ${hp}\nMetode: ${payment}\n\n*Detail:*\n`;
         cart.forEach((item, i) => { pesan += `${i+1}. ${item.nama} (${item.qty}x) = Rp ${item.subtotal.toLocaleString()}\n`; });
         pesan += `\n*TOTAL: Rp ${totalBayar.toLocaleString()}*`;
-        alert("Berhasil!"); closeOrderModal();
+        alert("Pesanan Masuk!"); closeOrderModal();
         window.open(`https://wa.me/62895345452412?text=${encodeURIComponent(pesan)}`, '_blank');
     } catch (err) { alert(err.message); }
 };
 
-// LOAD DATA
+// LOAD ADMIN & POIN
 function loadAdminData() {
     db.collection("orders").onSnapshot(snap => {
         let q=0, t=0, pending=0;
         document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
             const o = d.data();
-            if(o.status === 'Selesai') { q++; t += o.total; }
+            if(o.status === 'Selesai') { q++; t += (o.total || 0); }
             if(o.status === 'pending') { pending++; }
             return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')" class="btn-sm-gold">Selesai</button>`:'✅'}</td></tr>`;
         }).join('');
@@ -141,12 +141,29 @@ function loadAdminData() {
     });
 }
 
+// PERINGKAT RESELLER
+async function loadRankings() {
+    const userSnap = await db.collection("users").where("role", "==", "reseller").get();
+    const orderSnap = await db.collection("orders").where("status", "==", "Selesai").get();
+    const allOrders = orderSnap.docs.map(d => d.data());
+
+    let ranks = userSnap.docs.map(u => {
+        const userData = u.data();
+        const myOrders = allOrders.filter(o => o.resellerId === u.id);
+        const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        return { nama: userData.nama, total: totalBelanja, poin: Math.floor(totalBelanja / 1000) };
+    });
+
+    ranks.sort((a, b) => b.total - a.total);
+    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `<tr><td>${i+1}</td><td><strong>${r.nama}</strong></td><td>${r.poin.toLocaleString()}</td><td>Rp ${r.total.toLocaleString()}</td></tr>`).join('');
+}
+
 function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         let q=0, t=0;
         document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
             const o = d.data();
-            if(o.status === 'Selesai') { q += o.jumlah; t += o.total; }
+            if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
             return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td>${o.status}</td></tr>`;
         }).join('');
         document.getElementById("resQty").innerText = q;
@@ -161,49 +178,46 @@ function loadResellerData() {
     });
 }
 
-// FORM HANDLERS (PENYEBAB FORCE CLOSE JIKA TIDAK ADA)
+// HANDLERS
 document.getElementById("resellerReturnForm").onsubmit = async (e) => {
     e.preventDefault();
     try {
         await db.collection("returns").add({
             resellerId: currentUser.id, resellerName: currentUser.nama,
-            produk: document.getElementById("retProd").value,
-            alasan: document.getElementById("retReason").value,
-            hp: document.getElementById("retHp").value,
-            status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4),
+            produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value,
+            hp: document.getElementById("retHp").value, status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Laporan Retur Dikirim!"); e.target.reset();
+        alert("Retur Dikirim!"); e.target.reset();
     } catch(err) { alert(err.message); }
 };
-
 document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
     e.preventDefault();
     try {
         await db.collection("complaints").add({
             resellerId: currentUser.id, resellerName: currentUser.nama,
-            isi: document.getElementById("compText").value,
-            pelapor: document.getElementById("compName").value,
-            hp: document.getElementById("compHp").value,
-            status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4),
+            isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value,
+            hp: document.getElementById("compHp").value, status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         alert("Keluhan Dikirim!"); e.target.reset();
     } catch(err) { alert(err.message); }
 };
-
 document.getElementById("editProfileForm").onsubmit = async (e) => {
     e.preventDefault();
     try {
-        await db.collection("users").doc(currentUser.id).update({
-            nama: document.getElementById("profNama").value,
-            hp: document.getElementById("profHp").value
-        });
-        alert("Profil diperbarui!");
+        await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value });
+        alert("Profil Diupdate!");
     } catch(err) { alert(err.message); }
 };
 
 // UTILS
+function showSection(id) {
+    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    if(id === 'secAdminRankings') loadRankings();
+    toggleSidebar(false);
+}
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 function syncCatalog() {
     db.collection("products").onSnapshot(s => {
@@ -211,11 +225,6 @@ function syncCatalog() {
         const sel = document.getElementById("ordProdSelect");
         if(sel) sel.innerHTML = catalog.map(p => `<option value="${p.id}">${p.nama} - Rp${p.harga}</option>`).join('');
     });
-}
-function showSection(id) {
-    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    toggleSidebar(false);
 }
 function toggleSidebar(f) {
     const s = document.getElementById("sidebar"), o = document.getElementById("sidebarOverlay");
@@ -241,6 +250,6 @@ document.getElementById("registerForm").onsubmit = async (e) => {
             nama: document.getElementById("regNama").value, email: document.getElementById("regEmail").value,
             role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Pendaftaran Berhasil!");
+        alert("Daftar Berhasil!");
     } catch(err) { alert(err.message); }
 };
