@@ -1,3 +1,4 @@
+// CONFIG FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyCkH8ACVHoRxYru1g9oPa9tMD4yBUYQcZM",
     authDomain: "member-reseller-boci.firebaseapp.com",
@@ -37,9 +38,11 @@ function initApp() {
     syncCatalog();
 
     if (currentUser.role === 'admin') {
+        document.getElementById("adminNotifHeader").classList.remove("hidden");
         showSection('secAdminDashboard');
         loadAdminData();
     } else {
+        document.getElementById("adminNotifHeader").classList.add("hidden");
         showSection('secResellerDashboard');
         loadResellerData();
     }
@@ -49,168 +52,145 @@ function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
     let menu = '';
     if (currentUser.role === 'admin') {
-        menu = `<div class="nav-item" onclick="showSection('secAdminDashboard')">Dashboard Admin</div>
-                <div class="nav-item" onclick="showSection('secAdminReturn')">Returan Masuk</div>
-                <div class="nav-item" onclick="showSection('secAdminComplaint')">Keluhan Masuk</div>`;
+        menu = `<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+                <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+                <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>`;
     } else {
-        menu = `<div class="nav-item" onclick="showSection('secResellerDashboard')">Dashboard Reseller</div>
-                <div class="nav-item" onclick="showSection('secResellerReturn')">Retur Barang</div>
-                <div class="nav-item" onclick="showSection('secResellerComplaint')">Laporan Keluhan</div>`;
+        menu = `<div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
+                <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+                <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>`;
     }
-    menu += `<div class="nav-item" onclick="showSection('secProfile')">Profil Akun</div>`;
+    menu += `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
     nav.innerHTML = menu;
 }
 
-function showSection(id) {
-    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    toggleSidebar(false);
+// LOAD DATA ADMIN & NOTIFIKASI BADGE
+function loadAdminData() {
+    // Pesanan & Notif Badge Order
+    db.collection("orders").onSnapshot(snap => {
+        let q=0, t=0, pending=0;
+        document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            if(o.status === 'Selesai') { q += o.jumlah; t += o.total; }
+            if(o.status === 'pending') { pending++; }
+            return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')">Selesai</button>`:'✅'}</td></tr>`;
+        }).join('');
+        document.getElementById("badgeOrder").innerText = pending;
+        document.getElementById("admQty").innerText = q;
+        document.getElementById("admTotal").innerText = "Rp "+t.toLocaleString();
+        document.getElementById("admPoin").innerText = Math.floor(t/1000);
+    });
+
+    // Notif Badge Retur
+    db.collection("returns").onSnapshot(snap => {
+        let pending = 0;
+        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            if(r.status === 'Proses') { pending++; }
+            return `<tr><td>${r.resellerName}</td><td>${r.produk}</td><td>${r.alasan}</td><td>${r.status==='Proses'?`<button onclick="updateStat('returns','${d.id}')">Selesai</button>`:'✅'}</td></tr>`;
+        }).join('');
+        document.getElementById("badgeReturn").innerText = pending;
+    });
+
+    // Notif Badge Keluhan
+    db.collection("complaints").onSnapshot(snap => {
+        let pending = 0;
+        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+            const c = d.data();
+            if(c.status === 'Proses') { pending++; }
+            return `<tr><td>${c.pelapor}</td><td>${c.isi}</td><td>${c.hp}</td><td>${c.status==='Proses'?`<button onclick="updateStat('complaints','${d.id}')">Selesai</button>`:'✅'}</td></tr>`;
+        }).join('');
+        document.getElementById("badgeComplaint").innerText = pending;
+    });
 }
 
-function toggleSidebar(force) {
-    const side = document.getElementById("sidebar");
-    const over = document.getElementById("sidebarOverlay");
-    if(force === false) { side.classList.remove("active"); over.classList.remove("active"); }
-    else { side.classList.toggle("active"); over.classList.toggle("active"); }
+// LOAD DATA RESELLER & STATS
+function loadResellerData() {
+    db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
+        let q=0, t=0;
+        document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            if(o.status === 'Selesai') { q += o.jumlah; t += o.total; }
+            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td>${o.status}</td></tr>`;
+        }).join('');
+        document.getElementById("resQty").innerText = q;
+        document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
+        document.getElementById("resPoin").innerText = Math.floor(t/1000);
+    });
+    // Load Return & Complaint History
+    db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
+    });
+    db.collection("complaints").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,10)}...</td><td>${d.data().status}</td></tr>`).join('');
+    });
 }
 
-// LOGIKA INPUT DATA (FIXED FORCE CLOSE)
-async function submitData(collection, data, alertMsg) {
-    try {
-        await db.collection(collection).add({
-            ...data,
-            resellerId: currentUser.id,
-            resellerName: currentUser.nama,
-            status: "Proses",
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert(alertMsg);
-        return true;
-    } catch (e) {
-        alert("Gagal mengirim data: " + e.message);
-        return false;
-    }
-}
-
-// RESELLER: PESANAN BARU
+// SISTEM INPUT
 document.getElementById("orderForm").onsubmit = async (e) => {
     e.preventDefault();
     const prod = catalog.find(p => p.id === document.getElementById("ordProd").value);
-    const qty = parseInt(document.getElementById("ordQty").value);
     const data = {
         customerName: document.getElementById("ordCustomer").value,
-        produk: prod.nama,
-        jumlah: qty,
-        total: prod.harga * qty,
-        metode: document.getElementById("ordPayment").value
+        produk: prod.nama, jumlah: parseInt(document.getElementById("ordQty").value),
+        total: prod.harga * parseInt(document.getElementById("ordQty").value),
+        metode: document.getElementById("ordPayment").value,
+        resellerId: currentUser.id, resellerName: currentUser.nama, status: "pending",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    if (await submitData("orders", data, "Pesanan Berhasil!")) {
-        closeOrderModal();
-        e.target.reset();
-    }
+    await db.collection("orders").add(data);
+    alert("Pesanan Terkirim!"); closeOrderModal(); e.target.reset();
 };
 
-// RESELLER: RETUR
 document.getElementById("resellerReturnForm").onsubmit = async (e) => {
     e.preventDefault();
-    const data = {
-        produk: document.getElementById("retProd").value,
-        alasan: document.getElementById("retReason").value,
-        hp: document.getElementById("retHp").value,
-        idTiket: "RET-" + Date.now().toString().slice(-5)
-    };
-    if (await submitData("returns", data, "Pengajuan Retur Dikirim!")) e.target.reset();
+    await db.collection("returns").add({
+        produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value,
+        hp: document.getElementById("retHp").value, resellerId: currentUser.id, resellerName: currentUser.nama,
+        status: "Proses", idTiket: "RET-"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Retur dikirim!"); e.target.reset();
 };
 
-// RESELLER: KELUHAN
 document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
     e.preventDefault();
-    const data = {
-        isi: document.getElementById("compText").value,
-        pelapor: document.getElementById("compName").value,
-        hp: document.getElementById("compHp").value,
-        idTiket: "COMP-" + Date.now().toString().slice(-5)
-    };
-    if (await submitData("complaints", data, "Keluhan Berhasil Dikirim!")) e.target.reset();
+    await db.collection("complaints").add({
+        isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value,
+        hp: document.getElementById("compHp").value, resellerId: currentUser.id, resellerName: currentUser.nama,
+        status: "Proses", idTiket: "CP-"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Keluhan dikirim!"); e.target.reset();
 };
 
-// ADMIN: LOAD DATA
-function loadAdminData() {
-    db.collection("orders").onSnapshot(s => {
-        document.getElementById("adminOrderTable").innerHTML = s.docs.map(d => {
-            const o = d.data();
-            return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status === 'Proses' ? `<button onclick="updateStatus('orders','${d.id}')">Selesaikan</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
-    db.collection("returns").onSnapshot(s => {
-        document.getElementById("adminReturnTable").innerHTML = s.docs.map(d => {
-            const r = d.data();
-            return `<tr><td>${r.idTiket}</td><td>${r.resellerName}</td><td>${r.produk}</td><td>${r.status === 'Proses' ? `<button onclick="updateStatus('returns','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
-    db.collection("complaints").onSnapshot(s => {
-        document.getElementById("adminCompTable").innerHTML = s.docs.map(d => {
-            const c = d.data();
-            return `<tr><td>${c.idTiket}</td><td>${c.pelapor} (${c.hp})</td><td>${c.isi}</td><td>${c.status === 'Proses' ? `<button onclick="updateStatus('complaints','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
+// UTILS
+async function updateStat(coll, id) {
+    if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" });
 }
-
-// RESELLER: LOAD DATA
-function loadResellerData() {
-    db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        let q=0, t=0;
-        document.getElementById("resellerOrderTable").innerHTML = s.docs.map(d => {
-            const o = d.data();
-            if(o.status === 'Selesai') { q += o.jumlah; t += o.total; }
-            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td class="status-${o.status.toLowerCase()}">${o.status}</td></tr>`;
-        }).join('');
-        document.getElementById("resQty").innerText = q;
-        document.getElementById("resTotal").innerText = "Rp " + t.toLocaleString();
-        document.getElementById("resPoin").innerText = Math.floor(t / 1000);
-    });
-    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td class="status-${d.data().status.toLowerCase()}">${d.data().status}</td></tr>`).join('');
-    });
-    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,15)}...</td><td class="status-${d.data().status.toLowerCase()}">${d.data().status}</td></tr>`).join('');
-    });
+function showSection(id) {
+    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    toggleSidebar(false);
 }
-
-// UPDATE STATUS (ADMIN ONLY)
-async function updateStatus(coll, id) {
-    if(confirm("Tandai sebagai Selesai?")) {
-        await db.collection(coll).doc(id).update({ status: "Selesai" });
-    }
-}
-
-// AUTH & UTILS
 function syncCatalog() {
     db.collection("products").onSnapshot(s => {
         catalog = s.docs.map(d => ({ id: d.id, ...d.data() }));
         document.getElementById("ordProd").innerHTML = catalog.map(p => `<option value="${p.id}">${p.nama} - Rp${p.harga}</option>`).join('');
     });
 }
+function toggleSidebar(f) {
+    const s = document.getElementById("sidebar"), o = document.getElementById("sidebarOverlay");
+    if(f===false){ s.classList.remove("active"); o.classList.remove("active"); }
+    else { s.classList.toggle("active"); o.classList.toggle("active"); }
+}
+function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); }
+function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 function logout() { auth.signOut(); }
 function switchAuth(m) {
     document.getElementById("loginForm").classList.toggle("hidden", m==='register');
     document.getElementById("registerForm").classList.toggle("hidden", m==='login');
 }
-function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); }
-function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
-
 document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
     auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(err => alert(err.message));
-};
-document.getElementById("registerForm").onsubmit = async (e) => {
-    e.preventDefault();
-    try {
-        const cred = await auth.createUserWithEmailAndPassword(document.getElementById("regEmail").value, document.getElementById("regPassword").value);
-        await db.collection("users").doc(cred.user.uid).set({
-            nama: document.getElementById("regNama").value, email: document.getElementById("regEmail").value,
-            role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        alert("Berhasil Daftar!");
-    } catch(err) { alert(err.message); }
 };
