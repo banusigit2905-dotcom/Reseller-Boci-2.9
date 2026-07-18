@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Boci Urat - Pro Dashboard v5</title>
+    <title>Portal Boci Urat - Final Fix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -12,7 +12,7 @@
 
     <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
-    <!-- LOGIN SCREEN -->
+    <!-- HALAMAN LOGIN -->
     <div id="loginScreen">
         <div class="login-container">
             <div class="login-header">
@@ -20,10 +20,13 @@
                 <h2>Login Reseller</h2>
                 <p>semangat berjualan!</p>
             </div>
+            
+            <!-- Perbaikan Tombol Tab Login (Berwarna & Bergaris) -->
             <div class="auth-tabs">
                 <button onclick="switchAuth('login')" id="tLog" class="tab-btn active">Masuk</button>
                 <button onclick="switchAuth('register')" id="tReg" class="tab-btn">Daftar</button>
             </div>
+
             <form id="loginForm">
                 <input type="email" id="loginEmail" placeholder="Email" required>
                 <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
@@ -38,7 +41,7 @@
         </div>
     </div>
 
-    <!-- APP WRAPPER -->
+    <!-- WRAPPER APLIKASI -->
     <div id="appWrapper" class="hidden">
         <aside id="sidebar">
             <div class="sidebar-header"><h2>BOCI URAT</h2></div>
@@ -47,23 +50,26 @@
 
         <main id="mainContent">
             <header class="top-nav">
+                <!-- SISI KIRI -->
                 <div class="nav-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                     <span id="sectionTitle">Dashboard</span>
-                    <!-- BADGE NOTIFIKASI ADMIN -->
-                    <div id="adminNotifHeader" class="nav-notif hidden">
-                        <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
-                        <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
-                        <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
-                    </div>
                 </div>
+                
+                <!-- SISI TENGAH (POSISI NOTIFIKASI DIPERBAIKI) -->
+                <div id="adminNotifHeader" class="nav-center hidden">
+                    <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
+                    <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
+                    <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
+                </div>
+
+                <!-- SISI KANAN -->
                 <div class="nav-right">
                     <button onclick="logout()" class="btn-logout">KELUAR</button>
                 </div>
             </header>
 
             <div class="content-body">
-                
                 <!-- DASHBOARD RESELLER -->
                 <section id="secResellerDashboard" class="app-section hidden">
                     <div class="stat-grid">
@@ -71,7 +77,6 @@
                         <div class="stat-card c2"><div>RUPIAH</div><div id="resTotal" class="stat-value">Rp 0</div></div>
                         <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
                     </div>
-                    <!-- PEMBATAS TABEL RIWAYAT PESANAN -->
                     <div class="card card-border">
                         <div class="card-header">
                             <h3>Riwayat Pesanan</h3>
@@ -93,7 +98,6 @@
                         <div class="stat-card c2"><div>OMZET</div><div id="admTotal" class="stat-value">Rp 0</div></div>
                         <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
                     </div>
-                    <!-- PEMBATAS TABEL PESANAN MASUK ADMIN -->
                     <div class="card card-border">
                         <h3>Pesanan Masuk (Pending)</h3>
                         <div class="table-container">
@@ -105,83 +109,46 @@
                     </div>
                 </section>
 
-                <!-- RETUR BARANG -->
+                <!-- Menu Retur, Keluhan, dan Profil tetap ada sesuai request sebelumnya -->
                 <section id="secResellerReturn" class="app-section hidden">
                     <div class="card card-border">
                         <h3>Ajukan Retur Barang</h3>
-                        <form id="resellerReturnForm">
-                            <input type="text" id="retProd" placeholder="Nama Produk" required>
-                            <textarea id="retReason" placeholder="Alasan Retur" required></textarea>
-                            <input type="tel" id="retHp" placeholder="No. HP" required>
-                            <button type="submit" class="btn-primary">KIRIM RETUR</button>
-                        </form>
+                        <form id="resellerReturnForm"><input type="text" id="retProd" placeholder="Produk" required><textarea id="retReason" placeholder="Alasan" required></textarea><input type="tel" id="retHp" placeholder="No. HP" required><button type="submit" class="btn-primary">KIRIM</button></form>
                     </div>
-                    <div class="card card-border">
-                        <h3>Riwayat Retur Saya</h3>
-                        <div class="table-container">
-                            <table><thead><tr><th>ID</th><th>Produk</th><th>Status</th></tr></thead><tbody id="resellerReturnHistory"></tbody></table>
-                        </div>
-                    </div>
+                    <div class="card card-border"><h3>Riwayat Retur</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Produk</th><th>Status</th></tr></thead><tbody id="resellerReturnHistory"></tbody></table></div></div>
                 </section>
 
                 <section id="secAdminReturn" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>Daftar Returan Masuk</h3>
-                        <div class="table-container">
-                            <table><thead><tr><th>Reseller</th><th>Produk</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table>
-                        </div>
-                    </div>
+                    <div class="card card-border"><h3>Daftar Returan</h3><div class="table-container"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div></div>
                 </section>
 
-                <!-- LAPORAN KELUHAN -->
                 <section id="secResellerComplaint" class="app-section hidden">
                     <div class="card card-border">
                         <h3>Laporkan Keluhan</h3>
-                        <form id="resellerComplaintForm">
-                            <textarea id="compText" placeholder="Detail keluhan..." required></textarea>
-                            <input type="text" id="compName" placeholder="Nama Anda" required>
-                            <input type="tel" id="compHp" placeholder="Nomor HP" required>
-                            <button type="submit" class="btn-primary">KIRIM LAPORAN</button>
-                        </form>
+                        <form id="resellerComplaintForm"><textarea id="compText" placeholder="Keluhan..." required></textarea><input type="text" id="compName" placeholder="Nama" required><input type="tel" id="compHp" placeholder="No HP" required><button type="submit" class="btn-primary">KIRIM</button></form>
                     </div>
-                    <div class="card card-border">
-                        <h3>Riwayat Laporan Keluhan Saya</h3>
-                        <div class="table-container">
-                            <table><thead><tr><th>ID</th><th>Keluhan</th><th>Status</th></tr></thead><tbody id="resellerCompHistory"></tbody></table>
-                        </div>
-                    </div>
+                    <div class="card card-border"><h3>Riwayat Keluhan</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Keluhan</th><th>Status</th></tr></thead><tbody id="resellerCompHistory"></tbody></table></div></div>
                 </section>
 
                 <section id="secAdminComplaint" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>Daftar Keluhan Reseller</h3>
-                        <div class="table-container">
-                            <table><thead><tr><th>Pelapor</th><th>Isi Keluhan</th><th>HP</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table>
-                        </div>
-                    </div>
+                    <div class="card card-border"><h3>Keluhan Reseller</h3><div class="table-container"><table><thead><tr><th>Pelapor</th><th>Isi</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div></div>
                 </section>
 
-                <!-- PROFIL -->
                 <section id="secProfile" class="app-section hidden">
                     <div class="card card-border">
                         <h3>Profil Akun</h3>
-                        <form id="editProfileForm">
-                            <input type="text" id="profNama" placeholder="Nama Lengkap" required>
-                            <input type="tel" id="profHp" placeholder="No HP" required>
-                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
-                        </form>
+                        <form id="editProfileForm"><input type="text" id="profNama" placeholder="Nama" required><input type="tel" id="profHp" placeholder="No HP" required><button type="submit" class="btn-primary">UPDATE</button></form>
                     </div>
                 </section>
             </div>
         </main>
     </div>
 
-    <!-- MODAL ORDER -->
     <div id="orderModal" class="hidden modal-overlay">
         <div class="card modal-box">
             <h3>Buat Pesanan</h3>
             <form id="orderForm">
-                <input type="text" id="ordCustomer" placeholder="Nama Customer" required>
+                <input type="text" id="ordCustomer" placeholder="Nama Pemesan" required>
                 <select id="ordProd" required></select>
                 <input type="number" id="ordQty" value="1" min="1" required>
                 <select id="ordPayment" required><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
