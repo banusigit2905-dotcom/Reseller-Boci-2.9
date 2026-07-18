@@ -6,10 +6,42 @@
 body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; }
 .hidden { display: none !important; }
 
-/* LOGIN CARD */
+/* --- PERBAIKAN TOMBOL LOGIN (ADA GARIS & BERWARNA) --- */
 #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
 .login-container { background: var(--card); padding: 40px; border-radius: 24px; color: var(--text-dark); width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-.logo-box { background: var(--red-mid); color: #fff; width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; }
+
+.auth-tabs { 
+    display: flex; gap: 0; margin: 25px 0; 
+    border: 2px solid var(--red-mid); /* Garis Pembatas */
+    border-radius: 12px; overflow: hidden; 
+}
+.tab-btn { 
+    flex: 1; border: none; padding: 12px; cursor: pointer; 
+    font-weight: 800; font-size: 14px; background: #fff; color: var(--red-mid);
+}
+.tab-btn.active { 
+    background: var(--red-mid); color: #fff; /* Warna saat aktif */
+}
+
+/* --- PERBAIKAN POSISI NOTIFIKASI DI TENGAH HEADER --- */
+.top-nav { 
+    padding: 15px 20px; background: var(--sidebar-bg); 
+    display: flex; align-items: center; 
+    justify-content: space-between; /* Membuat 3 kolom: kiri, tengah, kanan */
+}
+.nav-left { display: flex; align-items: center; gap: 10px; width: 30%; }
+.nav-center { 
+    display: flex; gap: 15px; justify-content: center; 
+    width: 40%; /* Mengambil area tengah */
+}
+.nav-right { display: flex; justify-content: flex-end; width: 30%; }
+
+.notif-item { position: relative; font-size: 18px; }
+.badge { 
+    position: absolute; top: -5px; right: -8px; 
+    background: var(--red-mid); color: #fff; 
+    font-size: 9px; padding: 2px 6px; border-radius: 50%; font-weight: 800; 
+}
 
 /* SIDEBAR & DIVIDER */
 #sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; left: -260px; z-index: 2000; transition: 0.3s; }
@@ -17,32 +49,24 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color
 .nav-item { padding: 15px 20px; color: #CBB9A6; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
 .nav-item:hover, .nav-item.active { background: var(--red-mid); color: #fff; }
 
-/* HEADER BADGES */
-.top-nav { padding: 15px; background: var(--sidebar-bg); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(242,169,59,0.1); }
-.nav-notif { display: flex; gap: 10px; align-items: center; margin-left: 15px; }
-.badge { background: var(--red-mid); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 50%; font-weight: 800; vertical-align: top; margin-left: -5px; }
-
-/* CARD PEMBATAS (BOX) */
+/* TABEL & PEMBATAS BOX (CARD) */
 .card { background: var(--card); border-radius: 16px; padding: 20px; color: var(--text-dark); margin: 0 20px 20px; }
-.card-border { border: 2px solid rgba(0,0,0,0.05); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.card-border { border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
 /* STATS */
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px; }
 .stat-card { padding: 15px; border-radius: 16px; color: #fff; text-align: center; }
-.stat-value { font-size: 14px; font-weight: 800; margin-top: 5px; }
+.stat-value { font-size: 13px; font-weight: 800; margin-top: 5px; }
 .stat-card.c1 { background: #D88423; } .stat-card.c2 { background: #C62828; } .stat-card.c3 { background: #4A633C; }
 
-/* TABLES */
+/* TABEL */
 .table-container { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 11px; }
 th { text-align: left; padding: 10px; border-bottom: 2px solid #ddd; }
 td { padding: 10px; border-bottom: 1px solid #eee; }
 
-/* BUTTONS & INPUTS */
-input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; }
+input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; }
 .btn-primary { background: var(--red-mid); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
-.btn-gold { background: var(--gold); border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
-.btn-sm-gold { background: var(--gold); border: none; padding: 5px 10px; border-radius: 8px; font-size: 9px; font-weight: 700; cursor: pointer; }
 
 @media (min-width: 992px) {
     #sidebar { left: 0; } #mainContent { margin-left: 260px; } .menu-toggle { display: none; }
