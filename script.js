@@ -127,7 +127,7 @@ function loadAdminData() {
         document.getElementById("badgeOrder").innerText = pending;
         document.getElementById("admQty").innerText = q;
         document.getElementById("admTotal").innerText = "Rp "+t.toLocaleString();
-        document.getElementById("admPoin").innerText = Math.floor(t/1000).toLocaleString();
+        document.getElementById("admPoin").innerText = Math.floor(t/100).toLocaleString();
     });
     db.collection("returns").onSnapshot(s => {
         let p=0; s.docs.forEach(d => { if(d.data().status==='Proses') p++; });
@@ -151,7 +151,7 @@ async function loadRankings() {
         const userData = u.data();
         const myOrders = allOrders.filter(o => o.resellerId === u.id);
         const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        return { nama: userData.nama, total: totalBelanja, poin: Math.floor(totalBelanja / 1000) };
+        return { nama: userData.nama, total: totalBelanja, poin: Math.floor(totalBelanja / 100) };
     });
 
     ranks.sort((a, b) => b.total - a.total);
@@ -168,7 +168,7 @@ function loadResellerData() {
         }).join('');
         document.getElementById("resQty").innerText = q;
         document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
-        document.getElementById("resPoin").innerText = Math.floor(t/1000).toLocaleString();
+        document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
     });
     db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
         document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
