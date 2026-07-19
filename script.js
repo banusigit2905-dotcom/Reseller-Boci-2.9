@@ -224,6 +224,7 @@ async function loadRankings() {
 }
 
 function loadResellerData() {
+    // Snapshot untuk data pribadi reseller
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         let q=0, t=0;
         document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
@@ -234,6 +235,18 @@ function loadResellerData() {
         document.getElementById("resQty").innerText = q;
         document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
         document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
+    });
+
+    // Panggil fungsi leaderboard setiap kali data dimuat
+    loadResellerLeaderboard();
+
+    // Snapshot Return
+    db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
+    });
+    // Snapshot Keluhan
+    db.collection("complaints").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,15)}..</td><td>${d.data().status}</td></tr>`).join('');
     });
 }
 
@@ -289,3 +302,32 @@ document.getElementById("registerForm").onsubmit = async (e) => {
         alert("Daftar Berhasil!");
     } catch(err) { alert(err.message); }
 };
+async function loadResellerLeaderboard() {
+    try {
+        const userSnap = await db.collection("users").where("role", "==", "reseller").get();
+        const orderSnap = await db.collection("orders").where("status", "==", "Selesai").get();
+        const allOrders = orderSnap.docs.map(d => d.data());
+        
+        let leaderboard = userSnap.docs.map(u => {
+            const userData = u.data();
+            const myOrders = allOrders.filter(o => o.resellerId === u.id);
+            const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            return { id: u.id, nama: userData.nama, poin: Math.floor(totalBelanja / 100) };
+        });
+
+        leaderboard.sort((a, b) => b.poin - a.poin);
+        const top10 = leaderboard.slice(0, 10);
+
+        const tbody = document.getElementById("resellerLeaderboardTable");
+        tbody.innerHTML = top10.map((res, index) => {
+            const isMe = res.id === currentUser.id;
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+            return `
+                <tr style="${isMe ? 'background: #fff3e0; font-weight: bold; border-left: 4px solid var(--gold);' : ''}">
+                    <td>${medal}</td>
+                    <td>${res.nama} ${isMe ? '<small>(Saya)</small>' : ''}</td>
+                    <td style="color: var(--red-mid); font-weight: bold;">${res.poin.toLocaleString()} Pts</td>
+                </tr>`;
+        }).join('');
+    } catch (err) { console.log(err); }
+                                                                    }
