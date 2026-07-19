@@ -89,20 +89,53 @@
         Halo, <span id="userGreetName">User</span>! 👋
     </div>
                 <!-- Dashboard Reseller -->
-                <section id="secResellerDashboard" class="app-section hidden">
-                    <div class="stat-grid">
-                        <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
-                        <div class="stat-card c2"><div>RUPIAH</div><div id="resTotal" class="stat-value">Rp 0</div></div>
-                        <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
-                    </div>
-                    <div class="card card-border">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h3>Riwayat Pesanan</h3>
-                            <button onclick="openOrderModal()" style="padding:8px 15px; background:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+ PESAN BARU</button>
-                        </div>
-                        <div class="table-container"><table><thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerOrderTable"></tbody></table></div>
-                    </div>
-                </section>
+                <!-- Dashboard Reseller -->
+<section id="secResellerDashboard" class="app-section hidden">
+    <div class="stat-grid">
+        <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
+        <div class="stat-card c2"><div>RUPIAH</div><div id="resTotal" class="stat-value">Rp 0</div></div>
+        <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
+    </div>
+
+    <!-- Riwayat Pesanan -->
+    <div class="card card-border">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3>Riwayat Pesanan</h3>
+            <button onclick="openOrderModal()" style="padding:8px 15px; background:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+ PESAN BARU</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+                <tbody id="resellerOrderTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TABEL RANGKING PEMBELIAN (LEADERBOARD) -->
+    <div class="card card-border" style="background: linear-gradient(145deg, #fffcf7, #fff7ec); border: 1px solid var(--gold);">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+            <span style="font-size: 24px;">🏆</span>
+            <div>
+                <h3 style="margin:0;">Top 10 Reseller Teraktif</h3>
+                <p style="font-size:11px; color:#666; margin:0;">Ayo tingkatkan pesananmu dan jadilah juara!</p>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr style="background: rgba(242, 169, 59, 0.1);">
+                        <th>Rank</th>
+                        <th>Nama Reseller</th>
+                        <th>Total Poin</th>
+                    </tr>
+                </thead>
+                <tbody id="resellerLeaderboardTable">
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- Dashboard Admin -->
                 <section id="secAdminDashboard" class="app-section hidden">
