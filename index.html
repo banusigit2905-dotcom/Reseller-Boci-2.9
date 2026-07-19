@@ -54,6 +54,37 @@
             </header>
 
             <div class="content-body">
+                <!-- Section Manajemen Katalog Admin -->
+<section id="secAdminCatalog" class="app-section hidden">
+    <div class="card card-border">
+        <h3>📦 Manajemen Katalog Produk</h3>
+        
+        <!-- Form Tambah/Edit Produk -->
+        <form id="adminProductForm" style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+            <input type="hidden" id="prodId"> <!-- ID tersembunyi untuk edit -->
+            <input type="text" id="prodNama" placeholder="Nama Produk" required>
+            <input type="number" id="prodHarga" placeholder="Harga (Angka saja)" required>
+            <input type="text" id="prodKategori" placeholder="Kategori (Contoh: Baso Aci / Topping)" required>
+            <button type="submit" class="btn-primary" id="btnSaveProduct">SIMPAN PRODUK</button>
+            <button type="button" onclick="resetProdForm()" class="btn-secondary hidden" id="btnCancelEdit">BATAL EDIT</button>
+        </form>
+
+        <!-- Tabel Daftar Produk -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminCatalogTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
                 <div class="welcome-container">
         Halo, <span id="userGreetName">User</span>! 👋
     </div>
