@@ -71,3 +71,24 @@ input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-r
     border-color: var(--red-mid);
     box-shadow: 0 0 10px rgba(198, 40, 40, 0.5); /* Efek cahaya merah */
 }
+/* GAYA SALAM DI SEBELAH KIRI */
+.welcome-container {
+    padding: 20px 20px 0 20px; /* Atas, Kanan, Bawah, Kiri */
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    text-align: left; /* Rata Kiri */
+}
+
+.welcome-container span {
+    color: var(--gold); /* Nama berwarna emas */
+    text-transform: capitalize;
+}
+
+/* Responsif untuk HP agar tidak terlalu mepet ke pinggir */
+@media (max-width: 768px) {
+    .welcome-container {
+        font-size: 18px;
+        padding: 15px 15px 0 20px;
+    }
+}
