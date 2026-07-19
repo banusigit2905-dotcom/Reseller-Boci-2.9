@@ -31,6 +31,9 @@ auth.onAuthStateChanged(async (user) => {
 function initApp() {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
+    document.getElementById("userGreetName").innerText = currentUser.nama;
+
+    document.getElementById("profNama").value = currentUser.nama || "";
     document.getElementById("profNama").value = currentUser.nama || "";
     document.getElementById("profHp").value = currentUser.hp || "";
     document.getElementById("profEmail").value = currentUser.email || "";
