@@ -37,7 +37,9 @@ function initApp() {
     document.getElementById("profHp").value = currentUser.hp || "";
     document.getElementById("profEmail").value = currentUser.email || "";
 
-    renderSidebar();
+    renderSidebar();<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+        <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div> <!-- Tambahan -->
+        <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
     syncCatalog();
 
     if (currentUser.role === 'admin') {
