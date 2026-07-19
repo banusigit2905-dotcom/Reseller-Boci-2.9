@@ -50,3 +50,24 @@ input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-r
 @media (min-width: 992px) {
     #sidebar { left: 0; } #mainContent { margin-left: 260px; } .menu-toggle { display: none; }
 }
+/* GAYA TOMBOL LOGOUT BARU */
+.btn-logout {
+    background: rgba(255, 255, 255, 0.1); /* Warna transparan putih tipis */
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Garis pinggir kotak */
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+/* EFEK SAAT KURSOR DI ATAS TOMBOL (HOVER) */
+.btn-logout:hover {
+    background: var(--red-mid); /* Berubah jadi merah saat disentuh */
+    border-color: var(--red-mid);
+    box-shadow: 0 0 10px rgba(198, 40, 40, 0.5); /* Efek cahaya merah */
+}
