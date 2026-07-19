@@ -33,7 +33,6 @@ function initApp() {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
     
-    // Greeting & Isi data profil otomatis
     document.getElementById("userGreetName").innerText = currentUser.nama || "User";
     const pNama = document.getElementById("profNama");
     const pHp = document.getElementById("profHp");
@@ -77,21 +76,19 @@ function renderSidebar() {
     nav.innerHTML = menu;
 }
 
-// FUNGSI PINDAH MENU (NAVIGASI)
 function showSection(id) {
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
     const target = document.getElementById(id);
     if(target) target.classList.remove('hidden');
     
-    // Refresh data sesuai menu yang diklik
     if(id === 'secAdminRankings') loadRankings();
     if(id === 'secAdminCatalog') loadAdminCatalog();
     if(id === 'secResellerDashboard') { loadResellerData(); loadResellerLeaderboard(); }
     
-    toggleSidebar(false); // Tutup menu otomatis (Sangat penting untuk HP)
+    toggleSidebar(false);
 }
 
-// --- BAGIAN PERINGKAT ADMIN (TOP 1-10) ---
+// --- PERINGKAT ADMIN (DENGAN NOMOR JELAS 1-10) ---
 async function loadRankings() {
     try {
         const userSnap = await db.collection("users").where("role", "==", "reseller").get();
@@ -109,21 +106,23 @@ async function loadRankings() {
         const tbody = document.getElementById("adminRankTable");
         if(tbody) {
             tbody.innerHTML = ranks.map((r, i) => {
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+                const noUrut = i + 1;
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
                 const rowStyle = i === 0 ? 'background: #FFF9C4; font-weight: bold; border-left: 5px solid #FBC02D;' : '';
+                
                 return `
                 <tr style="${rowStyle}">
-                    <td style="text-align:center;">${medal}</td>
+                    <td style="text-align:center; font-weight:800; font-size:14px;">${noUrut} ${medal}</td>
                     <td><strong>${r.nama}</strong> ${i === 0 ? '👑' : ''}</td>
                     <td style="color: #C62828; font-weight: bold;">${r.poin.toLocaleString()} Poin</td>
                     <td>Rp ${r.total.toLocaleString()}</td>
                 </tr>`;
             }).join('');
         }
-    } catch (err) { console.error("Ranking Admin Error:", err); }
+    } catch (err) { console.error(err); }
 }
 
-// --- BAGIAN LEADERBOARD RESELLER (TOP 1-10) ---
+// --- LEADERBOARD RESELLER (DENGAN NOMOR JELAS 1-10) ---
 async function loadResellerLeaderboard() {
     try {
         const userSnap = await db.collection("users").where("role", "==", "reseller").get();
@@ -143,24 +142,26 @@ async function loadResellerLeaderboard() {
         const tbody = document.getElementById("resellerLeaderboardTable");
         if(tbody) {
             tbody.innerHTML = top10.map((res, index) => {
+                const noUrut = index + 1;
                 const isMe = res.id === currentUser.id;
-                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                
                 let rowStyle = '';
                 if (index === 0) rowStyle = 'background: #FFF9C4; border-left: 5px solid #FBC02D; font-weight: bold;';
                 else if (isMe) rowStyle = 'background: #fff3e0; font-weight: bold; border-left: 4px solid #F2A93B;';
 
                 return `
                 <tr style="${rowStyle}">
-                    <td style="text-align:center;">${medal}</td>
+                    <td style="text-align:center; font-weight:800; font-size:14px;">${noUrut} ${medal}</td>
                     <td>${res.nama} ${index === 0 ? '👑' : ''} ${isMe ? '<small style="color:orange">(Saya)</small>' : ''}</td>
                     <td style="color: #C62828; font-weight: bold;">${res.poin.toLocaleString()} Poin</td>
                 </tr>`;
             }).join('');
         }
-    } catch (err) { console.log("Leaderboard Error:", err); }
+    } catch (err) { console.log(err); }
 }
 
-// --- DATA DASHBOARD ---
+// --- DASHBOARD DATA ---
 function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         let q=0, t=0;
@@ -207,7 +208,7 @@ function loadAdminData() {
     });
 }
 
-// --- LOGIKA KERANJANG & ORDER ---
+// --- TRANSAKSI ---
 function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 function addToCart() {
@@ -234,21 +235,15 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
     const totalBayar = cart.reduce((sum, i) => sum + i.subtotal, 0);
     const ringkasan = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
     try {
-        await db.collection("orders").add({
-            resellerId: currentUser.id, resellerName: currentUser.nama,
-            customerName: customer, customerHp: hp, produk: ringkasan,
-            total: totalBayar, jumlah: cart.reduce((sum, i) => sum + i.qty, 0),
-            metode: payment, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        await db.collection("orders").add({ resellerId: currentUser.id, resellerName: currentUser.nama, customerName: customer, customerHp: hp, produk: ringkasan, total: totalBayar, jumlah: cart.reduce((sum, i) => sum + i.qty, 0), metode: payment, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
         let pesan = `*PESANAN BARU*\nReseller: ${currentUser.nama}\nPenerima: ${customer}\nHP: ${hp}\nMetode: ${payment}\n\n*Detail:*\n`;
         cart.forEach((item, i) => { pesan += `${i+1}. ${item.nama} (${item.qty}x) = Rp ${item.subtotal.toLocaleString()}\n`; });
         pesan += `\n*TOTAL: Rp ${totalBayar.toLocaleString()}*`;
-        alert("Pesanan Masuk!"); closeOrderModal();
-        window.open(`https://wa.me/62895345452412?text=${encodeURIComponent(pesan)}`, '_blank');
+        alert("Pesanan Masuk!"); closeOrderModal(); window.open(`https://wa.me/62895345452412?text=${encodeURIComponent(pesan)}`, '_blank');
     } catch (err) { alert(err.message); }
 };
 
-// --- MANAJEMEN KATALOG ADMIN ---
+// --- KATALOG ADMIN ---
 function loadAdminCatalog() {
     const table = document.getElementById("adminCatalogTable");
     if(!table) return;
@@ -280,37 +275,15 @@ function prepareEditProduct(id) {
 async function deleteProduct(id) { if (confirm("Hapus produk?")) { await db.collection("products").doc(id).delete(); alert("Dihapus!"); } }
 function resetProdForm() { admProdForm.reset(); document.getElementById("prodId").value = ""; document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK"; document.getElementById("btnCancelEdit").classList.add("hidden"); }
 
-// --- HANDLER FORM (RETUR, KELUHAN, PROFIL) ---
+// --- FORMS HANDLER ---
 const rForm = document.getElementById("resellerReturnForm");
-if(rForm) {
-    rForm.onsubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await db.collection("returns").add({ resellerId: currentUser.id, resellerName: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Retur Terkirim!"); e.target.reset();
-        } catch(err) { alert(err.message); }
-    };
-}
+if(rForm) { rForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("returns").add({ resellerId: currentUser.id, resellerName: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Retur Terkirim!"); e.target.reset(); } catch(err) { alert(err.message); } }; }
+
 const cForm = document.getElementById("resellerComplaintForm");
-if(cForm) {
-    cForm.onsubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await db.collection("complaints").add({ resellerId: currentUser.id, resellerName: currentUser.nama, isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value, hp: document.getElementById("compHp").value, status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            alert("Keluhan Terkirim!"); e.target.reset();
-        } catch(err) { alert(err.message); }
-    };
-}
+if(cForm) { cForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("complaints").add({ resellerId: currentUser.id, resellerName: currentUser.nama, isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value, hp: document.getElementById("compHp").value, status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Keluhan Terkirim!"); e.target.reset(); } catch(err) { alert(err.message); } }; }
+
 const pForm = document.getElementById("editProfileForm");
-if(pForm) {
-    pForm.onsubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value });
-            alert("Profil Update!");
-        } catch(err) { alert(err.message); }
-    };
-}
+if(pForm) { pForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Profil Update!"); } catch(err) { alert(err.message); } }; }
 
 // --- UTILS ---
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
