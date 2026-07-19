@@ -326,7 +326,7 @@ async function loadResellerLeaderboard() {
                 <tr style="${isMe ? 'background: #fff3e0; font-weight: bold; border-left: 4px solid var(--gold);' : ''}">
                     <td>${medal}</td>
                     <td>${res.nama} ${isMe ? '<small>(Saya)</small>' : ''}</td>
-                    <td style="color: var(--red-mid); font-weight: bold;">${res.poin.toLocaleString()} Pts</td>
+                    <td style="color: var(--red-mid); font-weight: bold;">${res.poin.toLocaleString()} Poin</td>
                 </tr>`;
         }).join('');
     } catch (err) { console.log(err); }
