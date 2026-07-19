@@ -15,6 +15,7 @@ let currentUser = null;
 let catalog = [];
 let cart = [];
 
+// MONITOR STATUS LOGIN
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         const doc = await db.collection("users").doc(user.uid).get();
@@ -31,10 +32,12 @@ auth.onAuthStateChanged(async (user) => {
 function initApp() {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
-    document.getElementById("userGreetName").innerText = currentUser.nama;
-    document.getElementById("profNama").value = currentUser.nama || "";
-    document.getElementById("profHp").value = currentUser.hp || "";
-    document.getElementById("profEmail").value = currentUser.email || "";
+    
+    // Greeting & Profile Data
+    document.getElementById("userGreetName").innerText = currentUser.nama || "User";
+    if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
+    if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
+    if(document.getElementById("profEmail")) document.getElementById("profEmail").value = currentUser.email || "";
 
     renderSidebar();
     syncCatalog();
@@ -70,69 +73,27 @@ function renderSidebar() {
     nav.innerHTML = menu;
 }
 
-// --- FUNGSI KATALOG ADMIN (Pindahan dari CSS) ---
-function loadAdminCatalog() {
-    const table = document.getElementById("adminCatalogTable");
-    if(!table) return;
-    table.innerHTML = catalog.map(p => `
-        <tr>
-            <td>${p.nama}</td>
-            <td><small>${p.kategori || '-'}</small></td>
-            <td>Rp ${p.harga.toLocaleString()}</td>
-            <td>
-                <button onclick="prepareEditProduct('${p.id}')" style="color:blue; border:none; background:none; cursor:pointer;">Edit</button> | 
-                <button onclick="deleteProduct('${p.id}')" style="color:red; border:none; background:none; cursor:pointer;">Hapus</button>
-            </td>
-        </tr>
-    `).join('');
+// NAVIGATION
+function showSection(id) {
+    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
+    const target = document.getElementById(id);
+    if(target) target.classList.remove('hidden');
+    
+    if(id === 'secAdminRankings') loadRankings();
+    if(id === 'secAdminCatalog') loadAdminCatalog();
+    if(id === 'secResellerDashboard') loadResellerLeaderboard();
+    
+    toggleSidebar(false);
 }
 
-document.getElementById("adminProductForm").onsubmit = async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("prodId").value;
-    const data = {
-        nama: document.getElementById("prodNama").value,
-        harga: parseInt(document.getElementById("prodHarga").value),
-        kategori: document.getElementById("prodKategori").value
-    };
-    try {
-        if (id) {
-            await db.collection("products").doc(id).update(data);
-            alert("Produk Berhasil Diupdate!");
-        } else {
-            await db.collection("products").add(data);
-            alert("Produk Berhasil Ditambah!");
-        }
-        resetProdForm();
-    } catch (err) { alert(err.message); }
-};
-
-function prepareEditProduct(id) {
-    const p = catalog.find(item => item.id === id);
-    document.getElementById("prodId").value = p.id;
-    document.getElementById("prodNama").value = p.nama;
-    document.getElementById("prodHarga").value = p.harga;
-    document.getElementById("prodKategori").value = p.kategori || "";
-    document.getElementById("btnSaveProduct").innerText = "UPDATE PRODUK";
-    document.getElementById("btnCancelEdit").classList.remove("hidden");
+// --- LOGIKA PESANAN (RESELLER) ---
+function openOrderModal() { 
+    document.getElementById("orderModal").classList.remove("hidden"); 
+    cart = []; 
+    renderCart(); 
+    goToStep1(); 
 }
 
-async function deleteProduct(id) {
-    if (confirm("Hapus produk ini dari katalog?")) {
-        await db.collection("products").doc(id).delete();
-        alert("Produk Dihapus!");
-    }
-}
-
-function resetProdForm() {
-    document.getElementById("adminProductForm").reset();
-    document.getElementById("prodId").value = "";
-    document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK";
-    document.getElementById("btnCancelEdit").classList.add("hidden");
-}
-
-// --- LOGIKA TRANSAKSI & LAINNYA ---
-function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 
 function addToCart() {
@@ -181,6 +142,175 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
     } catch (err) { alert(err.message); }
 };
 
+// --- DATA RESELLER ---
+function loadResellerData() {
+    db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
+        let q=0, t=0;
+        document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
+            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td>${o.status}</td></tr>`;
+        }).join('');
+        document.getElementById("resQty").innerText = q;
+        document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
+        document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
+    });
+
+    loadResellerLeaderboard();
+
+    db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
+    });
+    db.collection("complaints").where("resellerId","==",currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,15)}..</td><td>${d.data().status}</td></tr>`).join('');
+    });
+}
+
+// --- RANGKING / LEADERBOARD ---
+async function loadResellerLeaderboard() {
+    try {
+        const userSnap = await db.collection("users").where("role", "==", "reseller").get();
+        const orderSnap = await db.collection("orders").where("status", "==", "Selesai").get();
+        const allOrders = orderSnap.docs.map(d => d.data());
+        
+        let leaderboard = userSnap.docs.map(u => {
+            const userData = u.data();
+            const myOrders = allOrders.filter(o => o.resellerId === u.id);
+            const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            return { id: u.id, nama: userData.nama, poin: Math.floor(totalBelanja / 100) };
+        });
+
+        leaderboard.sort((a, b) => b.poin - a.poin);
+        const top10 = leaderboard.slice(0, 10);
+
+        const tbody = document.getElementById("resellerLeaderboardTable");
+        if(tbody) {
+            tbody.innerHTML = top10.map((res, index) => {
+                const isMe = res.id === currentUser.id;
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+                return `
+                    <tr style="${isMe ? 'background: #fff3e0; font-weight: bold; border-left: 4px solid var(--gold);' : ''}">
+                        <td>${medal}</td>
+                        <td>${res.nama} ${isMe ? '<small>(Saya)</small>' : ''}</td>
+                        <td style="color: var(--red-mid); font-weight: bold;">${res.poin.toLocaleString()} Poin</td>
+                    </tr>`;
+            }).join('');
+        }
+    } catch (err) { console.log("Leaderboard Error:", err); }
+}
+
+// --- KATALOG ADMIN ---
+function loadAdminCatalog() {
+    const table = document.getElementById("adminCatalogTable");
+    if(!table) return;
+    table.innerHTML = catalog.map(p => `
+        <tr>
+            <td>${p.nama}</td>
+            <td><small>${p.kategori || '-'}</small></td>
+            <td>Rp ${p.harga.toLocaleString()}</td>
+            <td>
+                <button onclick="prepareEditProduct('${p.id}')" style="color:blue; border:none; background:none; cursor:pointer;">Edit</button> | 
+                <button onclick="deleteProduct('${p.id}')" style="color:red; border:none; background:none; cursor:pointer;">Hapus</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+const adminProductForm = document.getElementById("adminProductForm");
+if(adminProductForm) {
+    adminProductForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("prodId").value;
+        const data = {
+            nama: document.getElementById("prodNama").value,
+            harga: parseInt(document.getElementById("prodHarga").value),
+            kategori: document.getElementById("prodKategori").value
+        };
+        try {
+            if (id) {
+                await db.collection("products").doc(id).update(data);
+                alert("Produk Berhasil Diupdate!");
+            } else {
+                await db.collection("products").add(data);
+                alert("Produk Berhasil Ditambah!");
+            }
+            resetProdForm();
+        } catch (err) { alert(err.message); }
+    };
+}
+
+function prepareEditProduct(id) {
+    const p = catalog.find(item => item.id === id);
+    document.getElementById("prodId").value = p.id;
+    document.getElementById("prodNama").value = p.nama;
+    document.getElementById("prodHarga").value = p.harga;
+    document.getElementById("prodKategori").value = p.kategori || "";
+    document.getElementById("btnSaveProduct").innerText = "UPDATE PRODUK";
+    document.getElementById("btnCancelEdit").classList.remove("hidden");
+}
+
+async function deleteProduct(id) {
+    if (confirm("Hapus produk ini dari katalog?")) {
+        await db.collection("products").doc(id).delete();
+        alert("Produk Dihapus!");
+    }
+}
+
+function resetProdForm() {
+    document.getElementById("adminProductForm").reset();
+    document.getElementById("prodId").value = "";
+    document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK";
+    document.getElementById("btnCancelEdit").classList.add("hidden");
+}
+
+// --- HANDLER FORM RETUR, KELUHAN, PROFIL ---
+const returnForm = document.getElementById("resellerReturnForm");
+if(returnForm) {
+    returnForm.onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await db.collection("returns").add({
+                resellerId: currentUser.id, resellerName: currentUser.nama,
+                produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value,
+                hp: document.getElementById("retHp").value, status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Retur Berhasil Dikirim!"); e.target.reset();
+        } catch(err) { alert(err.message); }
+    };
+}
+
+const complaintForm = document.getElementById("resellerComplaintForm");
+if(complaintForm) {
+    complaintForm.onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await db.collection("complaints").add({
+                resellerId: currentUser.id, resellerName: currentUser.nama,
+                isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value,
+                hp: document.getElementById("compHp").value, status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Keluhan Berhasil Dikirim!"); e.target.reset();
+        } catch(err) { alert(err.message); }
+    };
+}
+
+const profileForm = document.getElementById("editProfileForm");
+if(profileForm) {
+    profileForm.onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await db.collection("users").doc(currentUser.id).update({ 
+                nama: document.getElementById("profNama").value, 
+                hp: document.getElementById("profHp").value 
+            });
+            alert("Profil Berhasil Diupdate!");
+        } catch(err) { alert(err.message); }
+    };
+}
+
+// --- ADMIN DATA ---
 function loadAdminData() {
     db.collection("orders").onSnapshot(snap => {
         let q=0, t=0, pending=0;
@@ -207,58 +337,7 @@ function loadAdminData() {
     });
 }
 
-async function loadRankings() {
-    const userSnap = await db.collection("users").where("role", "==", "reseller").get();
-    const orderSnap = await db.collection("orders").where("status", "==", "Selesai").get();
-    const allOrders = orderSnap.docs.map(d => d.data());
-
-    let ranks = userSnap.docs.map(u => {
-        const userData = u.data();
-        const myOrders = allOrders.filter(o => o.resellerId === u.id);
-        const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        return { nama: userData.nama, total: totalBelanja, poin: Math.floor(totalBelanja / 100) };
-    });
-
-    ranks.sort((a, b) => b.total - a.total);
-    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `<tr><td>${i+1}</td><td><strong>${r.nama}</strong></td><td>${r.poin.toLocaleString()}</td><td>Rp ${r.total.toLocaleString()}</td></tr>`).join('');
-}
-
-function loadResellerData() {
-    // Snapshot untuk data pribadi reseller
-    db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
-        let q=0, t=0;
-        document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
-            const o = d.data();
-            if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
-            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString()}</td><td>${o.status}</td></tr>`;
-        }).join('');
-        document.getElementById("resQty").innerText = q;
-        document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
-        document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
-    });
-
-    // Panggil fungsi leaderboard setiap kali data dimuat
-    loadResellerLeaderboard();
-
-    // Snapshot Return
-    db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
-    });
-    // Snapshot Keluhan
-    db.collection("complaints").where("resellerId","==",currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,15)}..</td><td>${d.data().status}</td></tr>`).join('');
-    });
-}
-
-// --- UTILS & HANDLERS ---
-function showSection(id) {
-    document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-    if(id === 'secAdminRankings') loadRankings();
-    if(id === 'secAdminCatalog') loadAdminCatalog();
-    toggleSidebar(false);
-}
-
+// --- UTILS ---
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 
 function syncCatalog() {
@@ -266,8 +345,6 @@ function syncCatalog() {
         catalog = s.docs.map(d => ({ id: d.id, ...d.data() }));
         const sel = document.getElementById("ordProdSelect");
         if(sel) sel.innerHTML = catalog.map(p => `<option value="${p.id}">${p.nama} - Rp${p.harga}</option>`).join('');
-        // Update tabel katalog admin jika sedang dibuka
-        if(!document.getElementById('secAdminCatalog').classList.contains('hidden')) loadAdminCatalog();
     });
 }
 
@@ -302,32 +379,3 @@ document.getElementById("registerForm").onsubmit = async (e) => {
         alert("Daftar Berhasil!");
     } catch(err) { alert(err.message); }
 };
-async function loadResellerLeaderboard() {
-    try {
-        const userSnap = await db.collection("users").where("role", "==", "reseller").get();
-        const orderSnap = await db.collection("orders").where("status", "==", "Selesai").get();
-        const allOrders = orderSnap.docs.map(d => d.data());
-        
-        let leaderboard = userSnap.docs.map(u => {
-            const userData = u.data();
-            const myOrders = allOrders.filter(o => o.resellerId === u.id);
-            const totalBelanja = myOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-            return { id: u.id, nama: userData.nama, poin: Math.floor(totalBelanja / 100) };
-        });
-
-        leaderboard.sort((a, b) => b.poin - a.poin);
-        const top10 = leaderboard.slice(0, 10);
-
-        const tbody = document.getElementById("resellerLeaderboardTable");
-        tbody.innerHTML = top10.map((res, index) => {
-            const isMe = res.id === currentUser.id;
-            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
-            return `
-                <tr style="${isMe ? 'background: #fff3e0; font-weight: bold; border-left: 4px solid var(--gold);' : ''}">
-                    <td>${medal}</td>
-                    <td>${res.nama} ${isMe ? '<small>(Saya)</small>' : ''}</td>
-                    <td style="color: var(--red-mid); font-weight: bold;">${res.poin.toLocaleString()} Poin</td>
-                </tr>`;
-        }).join('');
-    } catch (err) { console.log(err); }
-                                                                    }
