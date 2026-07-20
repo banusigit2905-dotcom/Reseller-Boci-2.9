@@ -10,6 +10,7 @@
 <body>
     <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
+    <!-- LAYAR LOGIN -->
     <div id="loginScreen">
         <div class="login-container">
             <h2>OKTSHOP17</h2>
@@ -31,6 +32,7 @@
         </div>
     </div>
 
+    <!-- APLIKASI UTAMA -->
     <div id="appWrapper" class="hidden">
         <aside id="sidebar">
             <div style="padding:20px; text-align:center;"><h3>MENU</h3></div>
@@ -38,106 +40,70 @@
         </aside>
 
         <main id="mainContent">
+            <!-- HEADER NAVIGASI -->
             <header class="top-nav">
                 <div class="nav-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                     <span>OKTSHOP17</span>
                 </div>
-                <div id="adminNotifHeader" class="nav-center hidden">
-                    <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
-                    <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
-                    <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
-                </div>
+                
                 <div class="nav-right">
-    <button onclick="logout()" class="btn-logout">KELUAR</button>
-</div>
+                    <button onclick="logout()" class="btn-logout">KELUAR</button>
+                    
+                    <!-- NOTIFIKASI ADMIN (Pindah ke sebelah kanan tombol keluar) -->
+                    <div id="adminNotifHeader" class="admin-notif-container hidden">
+                        <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
+                        <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
+                        <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
+                    </div>
+                </div>
             </header>
 
             <div class="content-body">
-                <!-- Section Manajemen Katalog Admin -->
-<section id="secAdminCatalog" class="app-section hidden">
-    <div class="card card-border">
-        <h3>📦 Manajemen Katalog Produk</h3>
-        
-        <!-- Form Tambah/Edit Produk -->
-        <form id="adminProductForm" style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-            <input type="hidden" id="prodId"> <!-- ID tersembunyi untuk edit -->
-            <input type="text" id="prodNama" placeholder="Nama Produk" required>
-            <input type="number" id="prodHarga" placeholder="Harga (Angka saja)" required>
-            <input type="text" id="prodKategori" placeholder="Kategori (Contoh: Baso Aci / Topping)" required>
-            <button type="submit" class="btn-primary" id="btnSaveProduct">SIMPAN PRODUK</button>
-            <button type="button" onclick="resetProdForm()" class="btn-secondary hidden" id="btnCancelEdit">BATAL EDIT</button>
-        </form>
-
-        <!-- Tabel Daftar Produk -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Produk</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="adminCatalogTable"></tbody>
-            </table>
-        </div>
-    </div>
-</section>
                 <div class="welcome-container">
-        Halo, <span id="userGreetName">User</span>! 👋
-    </div>
-                <!-- Dashboard Reseller -->
-                <!-- Dashboard Reseller -->
-<section id="secResellerDashboard" class="app-section hidden">
-    <div class="stat-grid">
-        <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
-        <div class="stat-card c2"><div>RUPIAH</div><div id="resTotal" class="stat-value">Rp 0</div></div>
-        <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
-    </div>
+                    Halo, <span id="userGreetName">User</span>! 👋
+                </div>
 
-    <!-- Riwayat Pesanan -->
-    <div class="card card-border">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3>Riwayat Pesanan</h3>
-            <button onclick="openOrderModal()" style="padding:8px 15px; background:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+ PESAN BARU</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
-                <tbody id="resellerOrderTable"></tbody>
-            </table>
-        </div>
-    </div>
+                <!-- SECTION: DASHBOARD RESELLER -->
+                <section id="secResellerDashboard" class="app-section hidden">
+                    <div class="stat-grid">
+                        <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
+                        <div class="stat-card c2"><div>RUPIAH</div><div id="resTotal" class="stat-value">Rp 0</div></div>
+                        <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
+                    </div>
 
-    <!-- TABEL RANGKING PEMBELIAN (LEADERBOARD) -->
-    <div class="card card-border" style="background: linear-gradient(145deg, #fffcf7, #fff7ec); border: 1px solid var(--gold);">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-            <span style="font-size: 24px;">🏆</span>
-            <div>
-                <h3 style="margin:0;">Top 10 Reseller Teraktif</h3>
-                <p style="font-size:11px; color:#666; margin:0;">Ayo tingkatkan pesananmu dan jadilah juara!</p>
-            </div>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr style="background: rgba(242, 169, 59, 0.1);">
-                        <th>Rank</th>
-                        <th>Nama Reseller</th>
-                        <th>Total Poin</th>
-                    </tr>
-                </thead>
-                <tbody id="resellerLeaderboardTable">
-                    <!-- Diisi otomatis oleh JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</section>
+                    <div class="card card-border">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3>Riwayat Pesanan</h3>
+                            <button onclick="openOrderModal()" style="padding:8px 15px; background:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">+ PESAN BARU</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+                                <tbody id="resellerOrderTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                <!-- Dashboard Admin -->
+                    <!-- TABEL LEADERBOARD RESELLER (NOMOR 1-10) -->
+                    <div class="card card-border" style="background: linear-gradient(145deg, #fffcf7, #fff7ec); border: 1px solid var(--gold);">
+                        <h3>🏆 Top 10 Reseller Teraktif</h3>
+                        <div class="table-container">
+                            <table style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px; text-align:center;">No</th>
+                                        <th>Nama Reseller</th>
+                                        <th style="text-align:right;">Total Poin</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resellerLeaderboardTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION: DASHBOARD ADMIN -->
                 <section id="secAdminDashboard" class="app-section hidden">
                     <div class="stat-grid">
                         <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
@@ -146,31 +112,64 @@
                     </div>
                     <div class="card card-border">
                         <h3>Pesanan Masuk</h3>
-                        <div class="table-container"><table><thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminOrderTable"></tbody></table></div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminOrderTable"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
 
-                <!-- List Peringkat Reseller (FITUR BARU) -->
+                <!-- SECTION: PERINGKAT GLOBAL ADMIN (NOMOR 1-10) -->
                 <section id="secAdminRankings" class="app-section hidden">
                     <div class="card card-border">
-                        <h3>🏆 Peringkat Reseller</h3>
-                        <p style="font-size:11px; color:gray; margin-bottom:15px;">Berdasarkan total pesanan berstatus Selesai.</p>
+                        <h3>🏆 Peringkat Reseller (Global)</h3>
                         <div class="table-container">
-                            <table>
-                                <thead><tr><th>Rank</th><th>Nama Reseller</th><th>Total Poin</th><th>Total Belanja</th></tr></thead>
+                            <table style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px; text-align:center;">No</th>
+                                        <th>Nama Reseller</th>
+                                        <th>Poin</th>
+                                        <th>Total Belanja</th>
+                                    </tr>
+                                </thead>
                                 <tbody id="adminRankTable"></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
+                <!-- SECTION: KATALOG PRODUK ADMIN -->
+                <section id="secAdminCatalog" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>📦 Manajemen Katalog Produk</h3>
+                        <form id="adminProductForm" style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                            <input type="hidden" id="prodId">
+                            <input type="text" id="prodNama" placeholder="Nama Produk" required>
+                            <input type="number" id="prodHarga" placeholder="Harga" required>
+                            <input type="text" id="prodKategori" placeholder="Kategori" required>
+                            <button type="submit" class="btn-primary" id="btnSaveProduct">SIMPAN PRODUK</button>
+                            <button type="button" onclick="resetProdForm()" class="btn-secondary hidden" id="btnCancelEdit">BATAL EDIT</button>
+                        </form>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminCatalogTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION LAIN-LAIN (PROFIL, RETUR, KELUHAN) -->
                 <section id="secProfile" class="app-section hidden">
                     <div class="card card-border">
                         <h3>Profil Akun</h3>
                         <form id="editProfileForm">
-                            <label style="font-size:11px;color:gray">Email (Tetap)</label><input type="text" id="profEmail" readonly style="background:#eee;">
-                            <label style="font-size:11px;color:gray;margin-top:10px;display:block">Nama</label><input type="text" id="profNama" required>
-                            <label style="font-size:11px;color:gray;margin-top:10px;display:block">WhatsApp</label><input type="tel" id="profHp" required>
+                            <label>Email</label><input type="text" id="profEmail" readonly style="background:#eee;">
+                            <label>Nama</label><input type="text" id="profNama" required>
+                            <label>WhatsApp</label><input type="tel" id="profHp" required>
                             <button type="submit" class="btn-primary">UPDATE PROFIL</button>
                         </form>
                     </div>
