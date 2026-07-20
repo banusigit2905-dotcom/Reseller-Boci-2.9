@@ -33,6 +33,7 @@ function initApp() {
     document.getElementById("appWrapper").classList.remove("hidden");
     document.getElementById("userGreetName").innerText = currentUser.nama || "User";
     
+    // Set Profile Data
     if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
     if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
     if(document.getElementById("profEmail")) document.getElementById("profEmail").value = currentUser.email || "";
@@ -54,15 +55,27 @@ function initApp() {
 
 function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
-    let menu = currentUser.role === 'admin' ? `
-        <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
-        <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
-    ` : `
-        <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
-        <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
-        <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>
+    let menu = `
+        <div class="sidebar-brand"><h2>OKTSHOP17</h2></div>
+        <div class="sidebar-label">MENU UTAMA</div>
     `;
-    menu += `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
+    
+    if (currentUser.role === 'admin') {
+        menu += `
+            <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+            <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div>
+            <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
+            <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+            <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>`;
+    } else {
+        menu += `
+            <div class="nav-item" onclick="showSection('secResellerDashboard')">🏠 Dashboard Home</div>
+            <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+            <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>`;
+    }
+    menu += `
+        <div class="sidebar-label">SAYA</div>
+        <div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
     nav.innerHTML = menu;
 }
 
@@ -100,8 +113,14 @@ async function loadResellerLeaderboard() {
     } catch (e) { console.log(e); }
 }
 
-// SISTEM ORDER (MODAL)
-function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
+// ORDER MODAL LOGIC
+function openOrderModal() {
+    document.getElementById("orderModal").classList.remove("hidden");
+    cart = [];
+    renderCart();
+    goToStep1();
+}
+
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 
 function addToCart() {
@@ -116,7 +135,6 @@ function addToCart() {
 
 function renderCart() {
     const tbody = document.getElementById("cartTableBody"); let total = 0;
-    if(!tbody) return;
     tbody.innerHTML = cart.map((item, index) => { 
         total += item.subtotal; 
         return `<tr><td>${item.nama}</td><td>${item.qty}</td><td>Rp ${item.subtotal.toLocaleString()}</td><td><button onclick="removeFromCart(${index})" style="color:red;border:none;background:none;cursor:pointer;">X</button></td></tr>`; 
@@ -135,23 +153,22 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
     const ringkasan = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
     try {
         await db.collection("orders").add({ 
-            resellerId: currentUser.id, resellerName: currentUser.nama, customerName: customer, 
-            customerHp: hp, produk: ringkasan, total: totalBayar, 
-            jumlah: cart.reduce((sum, i) => sum + i.qty, 0), metode: payment, 
-            status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+            resellerId: currentUser.id, resellerName: currentUser.nama, customerName: customer, customerHp: hp, produk: ringkasan, 
+            total: totalBayar, jumlah: cart.reduce((sum, i) => sum + i.qty, 0), metode: payment, status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
         });
         alert("Pesanan Berhasil!"); closeOrderModal();
     } catch (err) { alert(err.message); }
 };
 
-// RIWAYAT RETUR & KELUHAN (FIXED SORT)
+// RIWAYAT RETUR & KELUHAN
 function loadResellerReturns() {
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         const tbody = document.getElementById("resellerReturnTableBody");
         if(tbody) {
             const docs = snap.docs.map(d => d.data());
             docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td></tr>`).join('');
+            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="txt-center status-${d.status.toLowerCase()}">${d.status}</td></tr>`).join('');
         }
     });
 }
@@ -159,7 +176,7 @@ document.getElementById("resellerReturnForm").onsubmit = async (e) => {
     e.preventDefault();
     const t = "RET-" + Math.floor(1000 + Math.random() * 9000);
     await db.collection("returns").add({ resellerId: currentUser.id, ticket: t, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "Proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    alert("Dikirim!"); e.target.reset();
+    alert("Retur dikirim!"); e.target.reset();
 };
 
 function loadResellerComplaints() {
@@ -168,7 +185,7 @@ function loadResellerComplaints() {
         if(tbody) {
             const docs = snap.docs.map(d => d.data());
             docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td></tr>`).join('');
+            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="txt-center status-${d.status.toLowerCase()}">${d.status}</td></tr>`).join('');
         }
     });
 }
@@ -176,7 +193,7 @@ document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
     e.preventDefault();
     const t = "COM-" + Math.floor(1000 + Math.random() * 9000);
     await db.collection("complaints").add({ resellerId: currentUser.id, ticket: t, hp: document.getElementById("compHp").value, keluhan: document.getElementById("compText").value, status: "Proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    alert("Dikirim!"); e.target.reset();
+    alert("Keluhan dikirim!"); e.target.reset();
 };
 
 // UTILS
