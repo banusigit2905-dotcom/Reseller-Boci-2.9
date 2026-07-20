@@ -56,7 +56,6 @@ function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
     let menu = currentUser.role === 'admin' ? `
         <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
-        <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div>
         <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
     ` : `
         <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
@@ -73,7 +72,7 @@ function showSection(id) {
     toggleSidebar(false);
 }
 
-// JUARA MEDALI & PERINGKAT SEJAJAR
+// LEADERBOARD DENGAN MEDALI & ALIGNMENT
 async function loadResellerLeaderboard() {
     try {
         const userSnap = await db.collection("users").where("role", "==", "reseller").get();
@@ -89,16 +88,11 @@ async function loadResellerLeaderboard() {
         const tbody = document.getElementById("resellerLeaderboardTable");
         if(tbody) {
             tbody.innerHTML = lb.map((res, index) => {
-                // Logika Medali Juara
-                let medal = "";
-                if(index === 0) medal = "🥇 ";
-                else if(index === 1) medal = "🥈 ";
-                else if(index === 2) medal = "🥉 ";
-
+                let medal = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
                 return `
                 <tr ${res.id === currentUser.id ? 'style="background:#fff3e0"' : ''}>
                     <td class="txt-center">${index + 1}</td>
-                    <td><b>${medal}</b>${res.nama} ${res.id === currentUser.id ? '<small>(Saya)</small>' : ''}</td>
+                    <td><b>${medal}</b>${res.nama} ${res.id === currentUser.id ? '(Saya)' : ''}</td>
                     <td class="txt-center" style="color:#C62828; font-weight:800;">${res.poin.toLocaleString()}</td>
                 </tr>`;
             }).join('');
@@ -106,64 +100,67 @@ async function loadResellerLeaderboard() {
     } catch (e) { console.log(e); }
 }
 
-// RIWAYAT RETUR (FIX DATA MASUK)
-const resReturnForm = document.getElementById("resellerReturnForm");
-if(resReturnForm) {
-    resReturnForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const ticketNum = "RET-" + Math.floor(1000 + Math.random() * 9000);
-        try {
-            await db.collection("returns").add({
-                resellerId: currentUser.id,
-                ticket: ticketNum,
-                produk: document.getElementById("retProd").value,
-                alasan: document.getElementById("retReason").value,
-                hp: document.getElementById("retHp").value,
-                status: "Proses",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Berhasil dikirim!");
-            resReturnForm.reset();
-        } catch (err) { alert(err.message); }
-    };
+// SISTEM ORDER (MODAL)
+function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
+function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
+
+function addToCart() {
+    const prodId = document.getElementById("ordProdSelect").value;
+    const qty = parseInt(document.getElementById("ordQtyInput").value);
+    const prod = catalog.find(p => p.id === prodId);
+    if (prod && qty > 0) {
+        cart.push({ id: prod.id, nama: prod.nama, harga: prod.harga, qty: qty, subtotal: prod.harga * qty });
+        renderCart();
+    }
 }
 
+function renderCart() {
+    const tbody = document.getElementById("cartTableBody"); let total = 0;
+    if(!tbody) return;
+    tbody.innerHTML = cart.map((item, index) => { 
+        total += item.subtotal; 
+        return `<tr><td>${item.nama}</td><td>${item.qty}</td><td>Rp ${item.subtotal.toLocaleString()}</td><td><button onclick="removeFromCart(${index})" style="color:red;border:none;background:none;cursor:pointer;">X</button></td></tr>`; 
+    }).join('');
+    document.getElementById("cartTotalText").innerText = "Total: Rp " + total.toLocaleString();
+}
+
+function removeFromCart(index) { cart.splice(index, 1); renderCart(); }
+function goToStep2() { if (cart.length === 0) return alert("Pilih produk dulu!"); document.getElementById("orderStep1").classList.add("hidden"); document.getElementById("orderStep2").classList.remove("hidden"); }
+function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
+
+document.getElementById("orderFormFinal").onsubmit = async (e) => {
+    e.preventDefault();
+    const customer = document.getElementById("ordCustomer").value, hp = document.getElementById("ordHp").value, payment = document.getElementById("ordPayment").value;
+    const totalBayar = cart.reduce((sum, i) => sum + i.subtotal, 0);
+    const ringkasan = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
+    try {
+        await db.collection("orders").add({ 
+            resellerId: currentUser.id, resellerName: currentUser.nama, customerName: customer, 
+            customerHp: hp, produk: ringkasan, total: totalBayar, 
+            jumlah: cart.reduce((sum, i) => sum + i.qty, 0), metode: payment, 
+            status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+        alert("Pesanan Berhasil!"); closeOrderModal();
+    } catch (err) { alert(err.message); }
+};
+
+// RIWAYAT RETUR & KELUHAN (FIXED SORT)
 function loadResellerReturns() {
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         const tbody = document.getElementById("resellerReturnTableBody");
         if(tbody) {
             const docs = snap.docs.map(d => d.data());
-            // Urutkan manual berdasarkan waktu (paling baru di atas)
             docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            tbody.innerHTML = docs.map(d => `
-                <tr>
-                    <td><span class="ticket-badge">${d.ticket}</span></td>
-                    <td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td>
-                </tr>`).join('');
+            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td></tr>`).join('');
         }
     });
 }
-
-// RIWAYAT KELUHAN (FIX DATA MASUK)
-const resCompForm = document.getElementById("resellerComplaintForm");
-if(resCompForm) {
-    resCompForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const ticketNum = "COM-" + Math.floor(1000 + Math.random() * 9000);
-        try {
-            await db.collection("complaints").add({
-                resellerId: currentUser.id,
-                ticket: ticketNum,
-                hp: document.getElementById("compHp").value,
-                keluhan: document.getElementById("compText").value,
-                status: "Proses",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Berhasil dikirim!");
-            resCompForm.reset();
-        } catch (err) { alert(err.message); }
-    };
-}
+document.getElementById("resellerReturnForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const t = "RET-" + Math.floor(1000 + Math.random() * 9000);
+    await db.collection("returns").add({ resellerId: currentUser.id, ticket: t, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "Proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert("Dikirim!"); e.target.reset();
+};
 
 function loadResellerComplaints() {
     db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
@@ -171,30 +168,28 @@ function loadResellerComplaints() {
         if(tbody) {
             const docs = snap.docs.map(d => d.data());
             docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-            tbody.innerHTML = docs.map(d => `
-                <tr>
-                    <td><span class="ticket-badge">${d.ticket}</span></td>
-                    <td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td>
-                </tr>`).join('');
+            tbody.innerHTML = docs.map(d => `<tr><td><span class="ticket-badge">${d.ticket}</span></td><td class="status-${d.status.toLowerCase()} txt-center">${d.status}</td></tr>`).join('');
         }
     });
 }
+document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const t = "COM-" + Math.floor(1000 + Math.random() * 9000);
+    await db.collection("complaints").add({ resellerId: currentUser.id, ticket: t, hp: document.getElementById("compHp").value, keluhan: document.getElementById("compText").value, status: "Proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert("Dikirim!"); e.target.reset();
+};
 
-// FUNGSI LAINNYA (TETAP SAMA)
+// UTILS
 function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         let q=0, t=0;
         document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
-            const o = d.data();
-            if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
+            const o = d.data(); if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
             return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td class="txt-right">Rp ${o.total.toLocaleString()}</td><td class="txt-center">${o.status}</td></tr>`;
         }).join('');
-        document.getElementById("resQty").innerText = q;
-        document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
-        document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
+        document.getElementById("resQty").innerText = q; document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString(); document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
     });
 }
-
 function syncCatalog() {
     db.collection("products").onSnapshot(s => {
         catalog = s.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -202,19 +197,8 @@ function syncCatalog() {
         if(sel) sel.innerHTML = catalog.map(p => `<option value="${p.id}">${p.nama} - Rp${p.harga.toLocaleString()}</option>`).join('');
     });
 }
-
-function toggleSidebar(f) {
-    const s = document.getElementById("sidebar"), o = document.getElementById("sidebarOverlay");
-    if(f===false){ s.classList.remove("active"); o.classList.remove("active"); }
-    else { s.classList.toggle("active"); o.classList.toggle("active"); }
-}
-
+function toggleSidebar(f) { const s = document.getElementById("sidebar"), o = document.getElementById("sidebarOverlay"); if(f===false){ s.classList.remove("active"); o.classList.remove("active"); } else { s.classList.toggle("active"); o.classList.toggle("active"); } }
 function logout() { auth.signOut(); }
-function switchAuth(m) {
-    document.getElementById("loginForm").classList.toggle("hidden", m==='register');
-    document.getElementById("registerForm").classList.toggle("hidden", m==='login');
-    document.getElementById("tLog").classList.toggle("active", m==='login');
-    document.getElementById("tReg").classList.toggle("active", m==='register');
-}
+function switchAuth(m) { document.getElementById("loginForm").classList.toggle("hidden", m==='register'); document.getElementById("registerForm").classList.toggle("hidden", m==='login'); document.getElementById("tLog").classList.toggle("active", m==='login'); document.getElementById("tReg").classList.toggle("active", m==='register'); }
 document.getElementById("loginForm").onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(err => alert(err.message)); };
 document.getElementById("registerForm").onsubmit = async (e) => { e.preventDefault(); try { const email = document.getElementById("regEmail").value; const cred = await auth.createUserWithEmailAndPassword(email, document.getElementById("regPassword").value); await db.collection("users").doc(cred.user.uid).set({ nama: document.getElementById("regNama").value, email: email, role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Berhasil!"); } catch(err) { alert(err.message); } };
