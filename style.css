@@ -92,3 +92,26 @@ input, select, textarea { width: 100%; padding: 12px; margin-top: 10px; border-r
         padding: 15px 15px 0 20px;
     }
 }
+/* Posisi Navigasi Kanan */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Kotak Notifikasi Admin */
+.admin-notif-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Perataan Nomor di Tabel */
+td:first-child, th:first-child {
+    text-align: center;
+}
