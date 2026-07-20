@@ -15,7 +15,6 @@ let currentUser = null;
 let catalog = [];
 let cart = [];
 
-// MONITOR STATUS LOGIN
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         const doc = await db.collection("users").doc(user.uid).get();
@@ -32,15 +31,10 @@ auth.onAuthStateChanged(async (user) => {
 function initApp() {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
-    
     document.getElementById("userGreetName").innerText = currentUser.nama || "User";
-    const pNama = document.getElementById("profNama");
-    const pHp = document.getElementById("profHp");
-    const pEmail = document.getElementById("profEmail");
-
-    if(pNama) pNama.value = currentUser.nama || "";
-    if(pHp) pHp.value = currentUser.hp || "";
-    if(pEmail) pEmail.value = currentUser.email || "";
+    
+    if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
+    if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
 
     renderSidebar();
     syncCatalog();
@@ -88,7 +82,7 @@ function showSection(id) {
     toggleSidebar(false);
 }
 
-// --- PERINGKAT ADMIN (DENGAN NOMOR JELAS 1-10) ---
+// PERINGKAT ADMIN
 async function loadRankings() {
     try {
         const userSnap = await db.collection("users").where("role", "==", "reseller").get();
@@ -106,23 +100,21 @@ async function loadRankings() {
         const tbody = document.getElementById("adminRankTable");
         if(tbody) {
             tbody.innerHTML = ranks.map((r, i) => {
-                const noUrut = i + 1;
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
                 const rowStyle = i === 0 ? 'background: #FFF9C4; font-weight: bold; border-left: 5px solid #FBC02D;' : '';
-                
                 return `
                 <tr style="${rowStyle}">
-                    <td style="text-align:center; font-weight:800; font-size:14px;">${noUrut} ${medal}</td>
-                    <td><strong>${r.nama}</strong> ${i === 0 ? '👑' : ''}</td>
-                    <td style="color: #C62828; font-weight: bold;">${r.poin.toLocaleString()} Poin</td>
-                    <td>Rp ${r.total.toLocaleString()}</td>
+                    <td style="text-align:center;">${i+1} ${medal}</td>
+                    <td style="text-align:left;"><strong>${r.nama}</strong> ${i === 0 ? '👑' : ''}</td>
+                    <td style="text-align:center; color: #C62828; font-weight: 800;">${r.poin.toLocaleString()} Poin</td>
+                    <td style="text-align:right;">Rp ${r.total.toLocaleString()}</td>
                 </tr>`;
             }).join('');
         }
     } catch (err) { console.error(err); }
 }
 
-// --- LEADERBOARD RESELLER (DENGAN NOMOR JELAS 1-10) ---
+// LEADERBOARD RESELLER
 async function loadResellerLeaderboard() {
     try {
         const userSnap = await db.collection("users").where("role", "==", "reseller").get();
@@ -142,26 +134,24 @@ async function loadResellerLeaderboard() {
         const tbody = document.getElementById("resellerLeaderboardTable");
         if(tbody) {
             tbody.innerHTML = top10.map((res, index) => {
-                const noUrut = index + 1;
                 const isMe = res.id === currentUser.id;
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-                
                 let rowStyle = '';
                 if (index === 0) rowStyle = 'background: #FFF9C4; border-left: 5px solid #FBC02D; font-weight: bold;';
                 else if (isMe) rowStyle = 'background: #fff3e0; font-weight: bold; border-left: 4px solid #F2A93B;';
 
                 return `
                 <tr style="${rowStyle}">
-                    <td style="text-align:center; font-weight:800; font-size:14px;">${noUrut} ${medal}</td>
-                    <td>${res.nama} ${index === 0 ? '👑' : ''} ${isMe ? '<small style="color:orange">(Saya)</small>' : ''}</td>
-                    <td style="color: #C62828; font-weight: bold;">${res.poin.toLocaleString()} Poin</td>
+                    <td style="text-align:center;">${index + 1} ${medal}</td>
+                    <td style="text-align:left;">${res.nama} ${index === 0 ? '👑' : ''} ${isMe ? '<small style="color:orange">(Saya)</small>' : ''}</td>
+                    <td style="text-align:center; color: #C62828; font-weight: 800;">${res.poin.toLocaleString()} Poin</td>
                 </tr>`;
             }).join('');
         }
     } catch (err) { console.log(err); }
 }
 
-// --- DASHBOARD DATA ---
+// DASHBOARD DATA
 function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(snap => {
         let q=0, t=0;
@@ -173,12 +163,6 @@ function loadResellerData() {
         document.getElementById("resQty").innerText = q;
         document.getElementById("resTotal").innerText = "Rp "+t.toLocaleString();
         document.getElementById("resPoin").innerText = Math.floor(t/100).toLocaleString();
-    });
-    db.collection("returns").where("resellerId","==",currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().produk}</td><td>${d.data().status}</td></tr>`).join('');
-    });
-    db.collection("complaints").where("resellerId","==",currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(d => `<tr><td>${d.data().idTiket}</td><td>${d.data().isi.substring(0,15)}..</td><td>${d.data().status}</td></tr>`).join('');
     });
 }
 
@@ -196,19 +180,9 @@ function loadAdminData() {
         document.getElementById("admTotal").innerText = "Rp "+t.toLocaleString();
         document.getElementById("admPoin").innerText = Math.floor(t/100).toLocaleString();
     });
-    db.collection("returns").onSnapshot(s => {
-        let p=0; s.docs.forEach(d => { if(d.data().status==='Proses') p++; });
-        document.getElementById("badgeReturn").innerText = p;
-        document.getElementById("adminReturnTable").innerHTML = s.docs.map(d => `<tr><td>${d.data().resellerName}</td><td>${d.data().produk}</td><td>${d.data().status==='Proses'?`<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; border:none; padding:5px 10px; border-radius:5px;">Selesai</button>`:'✅'}</td></tr>`).join('');
-    });
-    db.collection("complaints").onSnapshot(s => {
-        let p=0; s.docs.forEach(d => { if(d.data().status==='Proses') p++; });
-        document.getElementById("badgeComplaint").innerText = p;
-        document.getElementById("adminCompTable").innerHTML = s.docs.map(d => `<tr><td>${d.data().pelapor}</td><td>${d.data().isi}</td><td>${d.data().status==='Proses'?`<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; border:none; padding:5px 10px; border-radius:5px;">Selesai</button>`:'✅'}</td></tr>`).join('');
-    });
 }
 
-// --- TRANSAKSI ---
+// TRANSAKSI
 function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 function addToCart() {
@@ -243,7 +217,7 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
     } catch (err) { alert(err.message); }
 };
 
-// --- KATALOG ADMIN ---
+// KATALOG ADMIN
 function loadAdminCatalog() {
     const table = document.getElementById("adminCatalogTable");
     if(!table) return;
@@ -270,22 +244,15 @@ function prepareEditProduct(id) {
     document.getElementById("prodHarga").value = p.harga;
     document.getElementById("prodKategori").value = p.kategori || "";
     document.getElementById("btnSaveProduct").innerText = "UPDATE PRODUK";
-    document.getElementById("btnCancelEdit").classList.remove("hidden");
 }
+
 async function deleteProduct(id) { if (confirm("Hapus produk?")) { await db.collection("products").doc(id).delete(); alert("Dihapus!"); } }
-function resetProdForm() { admProdForm.reset(); document.getElementById("prodId").value = ""; document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK"; document.getElementById("btnCancelEdit").classList.add("hidden"); }
+function resetProdForm() { admProdForm.reset(); document.getElementById("prodId").value = ""; document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK"; }
 
-// --- FORMS HANDLER ---
-const rForm = document.getElementById("resellerReturnForm");
-if(rForm) { rForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("returns").add({ resellerId: currentUser.id, resellerName: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "Proses", idTiket: "RT"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Retur Terkirim!"); e.target.reset(); } catch(err) { alert(err.message); } }; }
-
-const cForm = document.getElementById("resellerComplaintForm");
-if(cForm) { cForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("complaints").add({ resellerId: currentUser.id, resellerName: currentUser.nama, isi: document.getElementById("compText").value, pelapor: document.getElementById("compName").value, hp: document.getElementById("compHp").value, status: "Proses", idTiket: "CP"+Date.now().toString().slice(-4), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Keluhan Terkirim!"); e.target.reset(); } catch(err) { alert(err.message); } }; }
-
+// HANDLER PROFIL, RETUR, KELUHAN
 const pForm = document.getElementById("editProfileForm");
 if(pForm) { pForm.onsubmit = async (e) => { e.preventDefault(); try { await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Profil Update!"); } catch(err) { alert(err.message); } }; }
 
-// --- UTILS ---
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 function syncCatalog() {
     db.collection("products").onSnapshot(s => {
@@ -307,11 +274,4 @@ function switchAuth(m) {
     document.getElementById("tReg").classList.toggle("active", m==='register');
 }
 document.getElementById("loginForm").onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value).catch(err => alert(err.message)); };
-document.getElementById("registerForm").onsubmit = async (e) => {
-    e.preventDefault();
-    try {
-        const cred = await auth.createUserWithEmailAndPassword(document.getElementById("regEmail").value, document.getElementById("regPassword").value);
-        await db.collection("users").doc(cred.user.uid).set({ nama: document.getElementById("regNama").value, email: document.getElementById("regEmail").value, role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        alert("Pendaftaran Berhasil!");
-    } catch(err) { alert(err.message); }
-};
+document.getElementById("registerForm").onsubmit = async (e) => { e.preventDefault(); try { const cred = await auth.createUserWithEmailAndPassword(document.getElementById("regEmail").value, document.getElementById("regPassword").value); await db.collection("users").doc(cred.user.uid).set({ nama: document.getElementById("regNama").value, email: document.getElementById("regEmail").value, role: 'reseller', createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Berhasil!"); } catch(err) { alert(err.message); } };
