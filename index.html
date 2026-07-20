@@ -46,12 +46,19 @@
             <div class="content-body">
                 <div class="welcome-container">Halo, <span id="userGreetName">User</span>! 👋</div>
 
-                <!-- DASHBOARD -->
+                <!-- DASHBOARD HOME -->
                 <section id="secResellerDashboard" class="app-section hidden">
                     <div class="stat-grid">
                         <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
                         <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
                         <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
+                    </div>
+
+                    <!-- MEGA ORDER BUTTON -->
+                    <div class="mega-order-container">
+                        <button onclick="openOrderModal()" class="btn-mega-order">
+                            🛒 MULAI PESAN SEKARANG
+                        </button>
                     </div>
                     
                     <div class="card">
@@ -65,7 +72,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-header-flex"><h3>Riwayat Pesanan</h3><button onclick="openOrderModal()" class="btn-gold-sm">+ PESAN</button></div>
+                        <h3>Riwayat Pesanan</h3>
                         <div class="table-container">
                             <table>
                                 <thead><tr><th>Customer</th><th>Produk</th><th class="txt-right">Total</th><th class="txt-center">Status</th></tr></thead>
@@ -75,28 +82,57 @@
                     </div>
                 </section>
 
+                <!-- SECTION RETUR -->
                 <section id="secResellerReturn" class="app-section hidden">
                     <div class="card">
-                        <h3>📦 Ajukan Retur</h3>
+                        <h3>📦 Ajukan Retur Barang</h3>
                         <form id="resellerReturnForm" class="form-styled">
-                            <input type="text" id="retProd" placeholder="Produk & Qty" required><textarea id="retReason" placeholder="Alasan Retur" required></textarea><input type="tel" id="retHp" placeholder="No WA" required><button type="submit" class="btn-primary">KIRIM</button>
+                            <input type="text" id="retProd" placeholder="Nama Produk & Qty" required>
+                            <textarea id="retReason" placeholder="Alasan Retur" required></textarea>
+                            <input type="tel" id="retHp" placeholder="No. WhatsApp Aktif" required>
+                            <button type="submit" class="btn-primary">KIRIM PENGAJUAN</button>
                         </form>
                     </div>
-                    <div class="card"><h3>📋 Riwayat Retur</h3><div class="table-container"><table><thead><tr><th>Tiket</th><th class="txt-center">Status</th></tr></thead><tbody id="resellerReturnTableBody"></tbody></table></div></div>
+                    <div class="card">
+                        <h3>📋 Riwayat Returan Anda</h3>
+                        <div class="table-container">
+                            <table><thead><tr><th>No. Tiket</th><th class="txt-center">Status</th></tr></thead><tbody id="resellerReturnTableBody"></tbody></table>
+                        </div>
+                    </div>
                 </section>
 
+                <!-- SECTION KELUHAN -->
                 <section id="secResellerComplaint" class="app-section hidden">
                     <div class="card">
                         <h3>📢 Laporan Keluhan</h3>
                         <form id="resellerComplaintForm" class="form-styled">
-                            <input type="tel" id="compHp" placeholder="No WA" required><textarea id="compText" placeholder="Keluhan..." required></textarea><button type="submit" class="btn-primary">KIRIM</button>
+                            <input type="tel" id="compHp" placeholder="No. WhatsApp Anda" required>
+                            <textarea id="compText" placeholder="Jelaskan Keluhan Anda..." required></textarea>
+                            <button type="submit" class="btn-primary">KIRIM LAPORAN</button>
                         </form>
                     </div>
-                    <div class="card"><h3>📋 Riwayat Keluhan</h3><div class="table-container"><table><thead><tr><th>Tiket</th><th class="txt-center">Status</th></tr></thead><tbody id="resellerComplaintTableBody"></tbody></table></div></div>
+                    <div class="card">
+                        <h3>📋 Riwayat Laporan Keluhan</h3>
+                        <div class="table-container">
+                            <table><thead><tr><th>No. Tiket</th><th class="txt-center">Status</th></tr></thead><tbody id="resellerComplaintTableBody"></tbody></table>
+                        </div>
+                    </div>
                 </section>
 
+                <!-- SECTION PROFIL -->
                 <section id="secProfile" class="app-section hidden">
-                    <div class="card"><h3>👤 Profil</h3><form id="editProfileForm" class="form-styled"><input type="email" id="profEmail" readonly><input type="text" id="profNama" required><input type="tel" id="profHp" required><button type="submit" class="btn-primary">UPDATE</button></form></div>
+                    <div class="card">
+                        <h3>👤 Profil Akun</h3>
+                        <form id="editProfileForm" class="form-styled">
+                            <label style="font-size:11px; color:#888;">Email Terdaftar</label>
+                            <input type="email" id="profEmail" readonly>
+                            <label style="font-size:11px; color:#888;">Nama Lengkap</label>
+                            <input type="text" id="profNama" required>
+                            <label style="font-size:11px; color:#888;">WhatsApp</label>
+                            <input type="tel" id="profHp" required>
+                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
+                        </form>
+                    </div>
                 </section>
             </div>
         </main>
@@ -107,22 +143,22 @@
         <div class="modal-box">
             <div id="orderStep1">
                 <h3>Pilih Produk</h3>
-                <select id="ordProdSelect" class="styled-input"></select>
+                <select id="ordProdSelect" class="styled-input" style="width:100%"></select>
                 <input type="number" id="ordQtyInput" value="1" min="1" class="styled-input">
-                <button onclick="addToCart()" class="btn-primary">TAMBAH</button>
+                <button onclick="addToCart()" class="btn-primary">TAMBAH KE DAFTAR</button>
                 <div class="table-container" style="max-height:120px; margin-top:10px;"><table><tbody id="cartTableBody"></tbody></table></div>
                 <div id="cartTotalText" style="text-align:right; font-weight:800; margin:10px 0;">Total: Rp 0</div>
-                <button onclick="goToStep2()" class="btn-primary" style="background:#4A633C">LANJUT</button>
-                <button onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
+                <button onclick="goToStep2()" class="btn-primary" style="background:#4A633C">LANJUTKAN PESANAN</button>
+                <button onclick="closeOrderModal()" style="width:100%; margin-top:5px; background:none; border:none; color:#666; cursor:pointer;">Batal</button>
             </div>
             <div id="orderStep2" class="hidden">
-                <h3>Data Penerima</h3>
+                <h3>Detail Pengiriman</h3>
                 <form id="orderFormFinal">
-                    <input type="text" id="ordCustomer" placeholder="Nama" required class="styled-input">
-                    <input type="tel" id="ordHp" placeholder="No WA" required class="styled-input">
-                    <select id="ordPayment" class="styled-input"><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
-                    <button type="submit" class="btn-primary">KONFIRMASI</button>
-                    <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
+                    <input type="text" id="ordCustomer" placeholder="Nama Penerima" required class="styled-input">
+                    <input type="tel" id="ordHp" placeholder="No. WA Penerima" required class="styled-input">
+                    <select id="ordPayment" class="styled-input"><option value="Transfer">Transfer Bank</option><option value="COD">COD (Bayar di Tempat)</option></select>
+                    <button type="submit" class="btn-primary">KONFIRMASI PESANAN</button>
+                    <button type="button" onclick="goToStep1()" style="width:100%; margin-top:5px; background:none; border:none; color:#666; cursor:pointer;">Kembali</button>
                 </form>
             </div>
         </div>
