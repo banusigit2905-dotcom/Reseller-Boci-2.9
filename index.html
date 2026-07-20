@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Overlay untuk Sidebar -->
     <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR (MENU SAMPING) -->
+    <aside id="sidebar">
+        <div class="sidebar-brand">OKTSHOP17</div>
+        <div class="sidebar-label">MENU UTAMA</div>
+        <nav id="sidebarNav"></nav>
+    </aside>
 
     <!-- LAYAR LOGIN -->
     <div id="loginScreen">
@@ -19,39 +27,31 @@
                 <button onclick="switchAuth('register')" id="tReg" class="tab-btn">DAFTAR</button>
             </div>
             <form id="loginForm">
-                <div class="input-group">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
-                </div>
-                <button type="submit" class="btn-primary">MASUK SEKARANG</button>
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+                <button type="submit" class="btn-primary">MASUK</button>
             </form>
             <form id="registerForm" class="hidden">
-                <div class="input-group">
-                    <input type="text" id="regNama" placeholder="Nama Lengkap" required>
-                    <input type="email" id="regEmail" placeholder="Email" required>
-                    <input type="password" id="regPassword" placeholder="Password (Min. 6 Karakter)" minlength="6" required>
-                </div>
-                <button type="submit" class="btn-primary">DAFTAR AKUN</button>
+                <input type="text" id="regNama" placeholder="Nama Lengkap" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" minlength="6" required>
+                <button type="submit" class="btn-primary">DAFTAR</button>
             </form>
         </div>
     </div>
 
-    <!-- APLIKASI UTAMA -->
+    <!-- ISI APLIKASI -->
     <div id="appWrapper" class="hidden">
-        <aside id="sidebar">
-            <div class="sidebar-header">MENU UTAMA</div>
-            <nav id="sidebarNav"></nav>
-        </aside>
-
         <main id="mainContent">
+            <!-- HEADER ATAS -->
             <header class="top-nav">
                 <div class="nav-left">
-                    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                    <button class="menu-toggle" onclick="toggleSidebar(true)">☰</button>
                     <span class="logo-text">OKTSHOP17</span>
                 </div>
                 
                 <div class="nav-right">
-                    <div id="adminNotifHeader" class="admin-notif-container hidden">
+                    <div id="adminNotifHeader" class="notif-box hidden">
                         <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
                         <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
                         <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
@@ -75,7 +75,7 @@
                     <div class="card card-border">
                         <div class="card-header-flex">
                             <h3>Riwayat Pesanan</h3>
-                            <button onclick="openOrderModal()" class="btn-gold-sm">+ PESAN BARU</button>
+                            <button onclick="openOrderModal()" class="btn-gold-sm">+ PESAN</button>
                         </div>
                         <div class="table-container">
                             <table>
@@ -84,11 +84,11 @@
                             </table>
                         </div>
                     </div>
-                    <div class="card card-border rank-card">
-                        <h3>🏆 Top 10 Reseller Teraktif</h3>
+                    <div class="card card-border">
+                        <h3>🏆 Top 10 Reseller</h3>
                         <div class="table-container">
                             <table>
-                                <thead><tr><th width="40">No</th><th>Nama</th><th class="text-right">Poin</th></tr></thead>
+                                <thead><tr><th width="30">No</th><th>Nama</th><th class="text-right">Poin</th></tr></thead>
                                 <tbody id="resellerLeaderboardTable"></tbody>
                             </table>
                         </div>
@@ -99,7 +99,7 @@
                 <section id="secAdminDashboard" class="app-section hidden">
                     <div class="stat-grid">
                         <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
-                        <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="admTotal" class="stat-value">Rp 0</div></div>
+                        <div class="stat-card c2"><div>OMZET</div><div id="admTotal" class="stat-value">Rp 0</div></div>
                         <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
                     </div>
                     <div class="card card-border">
@@ -113,23 +113,10 @@
                     </div>
                 </section>
 
-                <!-- PERINGKAT ADMIN -->
-                <section id="secAdminRankings" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>🏆 Peringkat Global</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th width="40">No</th><th>Reseller</th><th>Poin</th><th>Belanja</th></tr></thead>
-                                <tbody id="adminRankTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
                 <!-- KATALOG ADMIN -->
                 <section id="secAdminCatalog" class="app-section hidden">
                     <div class="card card-border">
-                        <h3>📦 Manajemen Katalog</h3>
+                        <h3>📦 Katalog Produk</h3>
                         <form id="adminProductForm" class="form-styled">
                             <input type="hidden" id="prodId">
                             <input type="text" id="prodNama" placeholder="Nama Produk" required>
@@ -146,19 +133,32 @@
                     </div>
                 </section>
 
-                <!-- PROFIL, RETUR, KELUHAN -->
+                <!-- PERINGKAT ADMIN -->
+                <section id="secAdminRankings" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>🏆 Peringkat Global</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>No</th><th>Reseller</th><th>Poin</th><th>Belanja</th></tr></thead>
+                                <tbody id="adminRankTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROFIL -->
                 <section id="secProfile" class="app-section hidden">
                     <div class="card card-border">
                         <h3>👤 Profil Akun</h3>
                         <form id="editProfileForm" class="form-styled">
-                            <label>Email</label><input type="text" id="profEmail" readonly class="input-readonly">
-                            <label>Nama</label><input type="text" id="profNama" required>
-                            <label>WhatsApp</label><input type="tel" id="profHp" required>
+                            <input type="text" id="profNama" placeholder="Nama Lengkap" required>
+                            <input type="tel" id="profHp" placeholder="WhatsApp" required>
                             <button type="submit" class="btn-primary">UPDATE PROFIL</button>
                         </form>
                     </div>
                 </section>
-                
+
+                <!-- RETUR & KELUHAN -->
                 <section id="secResellerReturn" class="app-section hidden">
                     <div class="card card-border">
                         <h3>📦 Ajukan Retur</h3>
@@ -166,28 +166,27 @@
                             <input type="text" id="retProd" placeholder="Nama Produk" required>
                             <textarea id="retReason" placeholder="Alasan Retur" required></textarea>
                             <input type="tel" id="retHp" placeholder="No WhatsApp" required>
-                            <button type="submit" class="btn-primary">KIRIM RETUR</button>
+                            <button type="submit" class="btn-primary">KIRIM</button>
                         </form>
                     </div>
                 </section>
 
                 <section id="secResellerComplaint" class="app-section hidden">
                     <div class="card card-border">
-                        <h3>📢 Laporan Keluhan</h3>
+                        <h3>📢 Keluhan</h3>
                         <form id="resellerComplaintForm" class="form-styled">
-                            <textarea id="compText" placeholder="Detail Keluhan..." required></textarea>
-                            <input type="text" id="compName" placeholder="Nama Pelapor" required>
-                            <input type="tel" id="compHp" placeholder="No WhatsApp" required>
-                            <button type="submit" class="btn-primary">KIRIM KELUHAN</button>
+                            <textarea id="compText" placeholder="Keluhan..." required></textarea>
+                            <button type="submit" class="btn-primary">KIRIM</button>
                         </form>
                     </div>
                 </section>
-                
+
+                <!-- ADMIN RETUR & KELUHAN -->
                 <section id="secAdminReturn" class="app-section hidden">
-                    <div class="card card-border"><h3>📥 Returan Masuk</h3><div class="table-container"><table><thead><tr><th>Reseller</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div></div>
+                    <div class="card card-border"><h3>📥 Returan Masuk</h3><div class="table-container"><table><tbody id="adminReturnTable"></tbody></table></div></div>
                 </section>
                 <section id="secAdminComplaint" class="app-section hidden">
-                    <div class="card card-border"><h3>📢 Keluhan Masuk</h3><div class="table-container"><table><thead><tr><th>Pelapor</th><th>Isi</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div></div>
+                    <div class="card card-border"><h3>📢 Keluhan Masuk</h3><div class="table-container"><table><tbody id="adminCompTable"></tbody></table></div></div>
                 </section>
 
             </div>
@@ -199,22 +198,22 @@
         <div class="modal-box">
             <div id="orderStep1">
                 <h3>Pilih Produk</h3>
-                <select id="ordProdSelect"></select>
-                <input type="number" id="ordQtyInput" value="1" min="1">
-                <button type="button" onclick="addToCart()" class="btn-primary">TAMBAH KE DAFTAR</button>
-                <div class="table-container" style="margin-top:15px; max-height: 150px;"><table><tbody id="cartTableBody"></tbody></table></div>
-                <div id="cartTotalText" style="text-align:right; font-weight:800; margin:10px 0;">Total: Rp 0</div>
-                <button type="button" onclick="goToStep2()" class="btn-primary" style="background:#4A633C">LANJUTKAN</button>
-                <button type="button" onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
+                <select id="ordProdSelect" style="width:100%; padding:10px; margin-bottom:10px;"></select>
+                <input type="number" id="ordQtyInput" value="1" min="1" style="width:100%; padding:10px; margin-bottom:10px;">
+                <button type="button" onclick="addToCart()" class="btn-primary">TAMBAH</button>
+                <div class="table-container" style="margin-top:15px; max-height: 120px;"><table><tbody id="cartTableBody"></tbody></table></div>
+                <div id="cartTotalText" style="text-align:right; font-weight:800; margin:10px 0; color:var(--red-mid);">Total: Rp 0</div>
+                <button type="button" onclick="goToStep2()" class="btn-primary" style="background:#4A633C">PESAN SEKARANG</button>
+                <button type="button" onclick="closeOrderModal()" class="btn-secondary" style="width:100%; margin-top:5px; border:none; padding:10px; border-radius:8px;">BATAL</button>
             </div>
             <div id="orderStep2" class="hidden">
                 <h3>Data Penerima</h3>
                 <form id="orderFormFinal">
-                    <input type="text" id="ordCustomer" placeholder="Nama Penerima" required>
-                    <input type="tel" id="ordHp" placeholder="No HP/WhatsApp" required>
-                    <select id="ordPayment"><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
-                    <button type="submit" class="btn-primary">ORDER VIA WHATSAPP</button>
-                    <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
+                    <input type="text" id="ordCustomer" placeholder="Nama Penerima" required style="width:100%; padding:10px; margin-bottom:10px;">
+                    <input type="tel" id="ordHp" placeholder="No HP/WhatsApp" required style="width:100%; padding:10px; margin-bottom:10px;">
+                    <select id="ordPayment" style="width:100%; padding:10px; margin-bottom:10px;"><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
+                    <button type="submit" class="btn-primary">KONFIRMASI WHATSAPP</button>
+                    <button type="button" onclick="goToStep1()" style="width:100%; margin-top:5px; border:none; padding:10px; border-radius:8px;">KEMBALI</button>
                 </form>
             </div>
         </div>
