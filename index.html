@@ -157,29 +157,64 @@
 
                 <!-- PROFIL -->
                 <section id="secProfile" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>👤 Profil Akun</h3>
-                        <form id="editProfileForm" class="form-styled">
-                            <input type="text" id="profNama" placeholder="Nama Lengkap" required>
-                            <input type="tel" id="profHp" placeholder="WhatsApp" required>
-                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
-                        </form>
-                    </div>
-                </section>
+    <div class="card card-border">
+        <h3>👤 Profil Akun</h3>
+        <form id="editProfileForm" class="form-styled">
+            <!-- Penambahan Email (Readonly) -->
+            <label style="font-size: 11px; color: #666; margin-left: 5px;">Email (Tetap)</label>
+            <input type="email" id="profEmail" readonly style="background: #eee; color: #888;">
+            
+            <input type="text" id="profNama" placeholder="Nama Lengkap" required>
+            <input type="tel" id="profHp" placeholder="WhatsApp" required>
+            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
+        </form>
+    </div>
+</section>
 
                 <!-- RETUR & KELUHAN -->
-                <section id="secResellerReturn" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>📦 Ajukan Retur</h3>
-                        <form id="resellerReturnForm" class="form-styled"><input type="text" id="retProd" placeholder="Produk" required><textarea id="retReason" placeholder="Alasan"></textarea><input type="tel" id="retHp" placeholder="No WA"><button type="submit" class="btn-primary">KIRIM</button></form>
-                    </div>
-                </section>
+               <section id="secResellerReturn" class="app-section hidden">
+    <div class="card card-border">
+        <h3>📦 Ajukan Retur</h3>
+        <form id="resellerReturnForm" class="form-styled">
+            <input type="text" id="retProd" placeholder="Produk" required>
+            <textarea id="retReason" placeholder="Alasan"></textarea>
+            <input type="tel" id="retHp" placeholder="No WA" required>
+            <button type="submit" class="btn-primary">KIRIM</button>
+        </form>
+    </div>
+    <!-- Penambahan Tabel Riwayat Retur -->
+    <div class="card card-border">
+        <h3>📜 Riwayat Retur</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Nama</th><th>Produk/Alasan</th><th>HP</th><th>Status</th></tr></thead>
+                <tbody id="resellerReturnHistory"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
                 <section id="secResellerComplaint" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>📢 Laporan Keluhan</h3>
-                        <form id="resellerComplaintForm" class="form-styled"><textarea id="compText" placeholder="Keluhan..."></textarea><button type="submit" class="btn-primary">KIRIM</button></form>
-                    </div>
-                </section>
+    <div class="card card-border">
+        <h3>📢 Laporan Keluhan</h3>
+        <form id="resellerComplaintForm" class="form-styled">
+            <!-- Penambahan Input Nama dan No HP di Keluhan -->
+            <input type="text" id="compNama" placeholder="Nama Pelapor" required>
+            <input type="tel" id="compHp" placeholder="Nomor HP/WA" required>
+            <textarea id="compText" placeholder="Isi Keluhan..." required></textarea>
+            <button type="submit" class="btn-primary">KIRIM</button>
+        </form>
+    </div>
+    <!-- Penambahan Tabel Riwayat Keluhan -->
+    <div class="card card-border">
+        <h3>📜 Riwayat Keluhan</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Nama</th><th>Keluhan</th><th>HP</th><th>Status</th></tr></thead>
+                <tbody id="resellerCompHistory"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- ADMIN OTHER -->
                 <section id="secAdminReturn" class="app-section hidden">
