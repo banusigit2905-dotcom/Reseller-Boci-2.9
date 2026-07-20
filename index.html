@@ -10,14 +10,11 @@
 <body>
     <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
-    <!-- SIDEBAR -->
     <aside id="sidebar">
-        <div class="sidebar-brand">OKTSHOP17</div>
-        <div class="sidebar-label">MENU UTAMA</div>
+        <div class="sidebar-brand" style="padding:25px; text-align:center; color:var(--gold); font-weight:800;">OKTSHOP17</div>
         <nav id="sidebarNav"></nav>
     </aside>
 
-    <!-- LAYAR LOGIN -->
     <div id="loginScreen">
         <div class="login-container">
             <h2 class="auth-title">OKTSHOP17</h2>
@@ -43,7 +40,6 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div id="appWrapper" class="hidden">
         <main id="mainContent">
             <header class="top-nav">
@@ -51,87 +47,50 @@
                     <button class="menu-toggle" onclick="toggleSidebar(true)">☰</button>
                     <span class="logo-text">OKTSHOP17</span>
                 </div>
-                <div class="nav-right">
-                    <div id="adminNotifHeader" class="notif-box hidden">
-                        <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
-                        <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
-                        <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
-                    </div>
-                    <button onclick="logout()" class="btn-logout">KELUAR</button>
-                </div>
+                <button onclick="logout()" class="btn-logout">KELUAR</button>
             </header>
 
             <div class="content-body">
                 <div class="welcome-container">Halo, <span id="userGreetName">User</span>! 👋</div>
 
-                <!-- DASHBOARD RESELLER -->
+                <!-- DASHBOARD -->
                 <section id="secResellerDashboard" class="app-section hidden">
                     <div class="stat-grid">
                         <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
                         <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
                         <div class="stat-card c3"><div>POIN</div><div id="resPoin" class="stat-value">0</div></div>
                     </div>
-                    <div class="card">
-                        <div class="card-header-flex">
-                            <h3>Riwayat Pesanan</h3>
-                            <button onclick="openOrderModal()" class="btn-gold-sm">+ PESAN</button>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
-                                <tbody id="resellerOrderTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
+                    
                     <div class="card">
                         <h3 style="margin-bottom:15px">🏆 Top 10 Reseller Teraktif</h3>
                         <div class="table-container">
                             <table>
-                                <thead><tr><th width="40">No</th><th>Nama Reseller</th><th width="80">Poin</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th width="40" class="txt-center">No</th>
+                                        <th>Nama Reseller</th>
+                                        <th width="80" class="txt-center">Poin</th>
+                                    </tr>
+                                </thead>
                                 <tbody id="resellerLeaderboardTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3>Riwayat Pesanan</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Customer</th><th>Produk</th><th class="txt-right">Total</th><th class="txt-center">Status</th></tr></thead>
+                                <tbody id="resellerOrderTable"></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- DASHBOARD ADMIN -->
-                <section id="secAdminDashboard" class="app-section hidden">
-                    <div class="stat-grid">
-                        <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
-                        <div class="stat-card c2"><div>TOTAL</div><div id="admTotal" class="stat-value">Rp 0</div></div>
-                        <div class="stat-card c3"><div>POIN</div><div id="admPoin" class="stat-value">0</div></div>
-                    </div>
-                    <div class="card">
-                        <h3>Pesanan Masuk</h3>
-                        <div class="table-container"><table id="adminOrderTable"></table></div>
-                    </div>
-                </section>
-
-                <!-- PERINGKAT ADMIN -->
-                <section id="secAdminRankings" class="app-section hidden">
-                    <div class="card">
-                        <h3>🏆 Peringkat Global</h3>
-                        <div class="table-container"><table><thead><tr><th>No</th><th>Nama</th><th>Poin</th><th>Total</th></tr></thead><tbody id="adminRankTable"></tbody></table></div>
-                    </div>
-                </section>
-
-                <!-- PROFIL -->
-                <section id="secProfile" class="app-section hidden">
-                    <div class="card">
-                        <h3>👤 Profil Akun</h3>
-                        <form id="editProfileForm" class="form-styled">
-                            <label style="font-size:11px; color:#888;">Email (Terdaftar)</label>
-                            <input type="email" id="profEmail" readonly>
-                            <label style="font-size:11px; color:#888;">Nama Lengkap</label>
-                            <input type="text" id="profNama" required>
-                            <label style="font-size:11px; color:#888;">WhatsApp</label>
-                            <input type="tel" id="profHp" required>
-                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
-                        </form>
-                    </div>
-                </section>
-
-                <!-- RETUR -->
+                <!-- FORM RETUR -->
                 <section id="secResellerReturn" class="app-section hidden">
                     <div class="card">
                         <h3>📦 Ajukan Retur</h3>
@@ -146,14 +105,14 @@
                         <h3>📋 Riwayat Returan</h3>
                         <div class="table-container">
                             <table>
-                                <thead><tr><th>No. Tiket</th><th>Status</th></tr></thead>
+                                <thead><tr><th>No. Tiket</th><th class="txt-center">Status</th></tr></thead>
                                 <tbody id="resellerReturnTableBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- KELUHAN -->
+                <!-- FORM KELUHAN -->
                 <section id="secResellerComplaint" class="app-section hidden">
                     <div class="card">
                         <h3>📢 Laporan Keluhan</h3>
@@ -167,58 +126,30 @@
                         <h3>📋 Riwayat Laporan</h3>
                         <div class="table-container">
                             <table>
-                                <thead><tr><th>No. Tiket</th><th>Status</th></tr></thead>
+                                <thead><tr><th>No. Tiket</th><th class="txt-center">Status</th></tr></thead>
                                 <tbody id="resellerComplaintTableBody"></tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- ADMIN OTHER -->
-                <section id="secAdminReturn" class="app-section hidden">
-                    <div class="card"><h3>📥 Returan Masuk</h3><div class="table-container"><table><tbody id="adminReturnTable"></tbody></table></div></div>
-                </section>
-                <section id="secAdminComplaint" class="app-section hidden">
-                    <div class="card"><h3>📢 Keluhan Masuk</h3><div class="table-container"><table><tbody id="adminCompTable"></tbody></table></div></div>
-                </section>
-                <section id="secAdminCatalog" class="app-section hidden">
+                <!-- PROFIL -->
+                <section id="secProfile" class="app-section hidden">
                     <div class="card">
-                        <h3>📦 Katalog</h3>
-                        <form id="adminProductForm" class="form-styled">
-                            <input type="hidden" id="prodId"><input type="text" id="prodNama" placeholder="Nama"><input type="number" id="prodHarga" placeholder="Harga"><input type="text" id="prodKategori" placeholder="Kategori">
-                            <button type="submit" class="btn-primary">SIMPAN</button>
+                        <h3>👤 Profil Akun</h3>
+                        <form id="editProfileForm" class="form-styled">
+                            <label style="font-size:11px; color:#888;">Email</label>
+                            <input type="email" id="profEmail" readonly>
+                            <label style="font-size:11px; color:#888;">Nama</label>
+                            <input type="text" id="profNama" required>
+                            <label style="font-size:11px; color:#888;">WhatsApp</label>
+                            <input type="tel" id="profHp" required>
+                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
                         </form>
-                        <div class="table-container"><table><tbody id="adminCatalogTable"></tbody></table></div>
                     </div>
                 </section>
             </div>
         </main>
-    </div>
-
-    <!-- MODAL ORDER -->
-    <div id="orderModal" class="hidden modal-overlay">
-        <div class="modal-box">
-            <div id="orderStep1">
-                <h3>Pilih Produk</h3>
-                <select id="ordProdSelect" class="styled-input"></select>
-                <input type="number" id="ordQtyInput" value="1" min="1" class="styled-input">
-                <button type="button" onclick="addToCart()" class="btn-primary">TAMBAH</button>
-                <div class="table-container" style="max-height:150px"><table id="cartTableBody"></table></div>
-                <div id="cartTotalText" style="text-align:right; font-weight:800; margin:10px 0; color:var(--red-mid);">Total: Rp 0</div>
-                <button onclick="goToStep2()" class="btn-primary" style="background:#4A633C">LANJUT</button>
-                <button onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
-            </div>
-            <div id="orderStep2" class="hidden">
-                <h3>Data Penerima</h3>
-                <form id="orderFormFinal">
-                    <input type="text" id="ordCustomer" placeholder="Nama" required class="styled-input">
-                    <input type="tel" id="ordHp" placeholder="No HP" required class="styled-input">
-                    <select id="ordPayment" class="styled-input"><option value="Transfer">Transfer</option><option value="COD">COD</option></select>
-                    <button type="submit" class="btn-primary">PESAN</button>
-                    <button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button>
-                </form>
-            </div>
-        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -226,4 +157,4 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
 </body>
-                                                                                                                                                                             </html>
+</html>
