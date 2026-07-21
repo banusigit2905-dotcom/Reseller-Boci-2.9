@@ -17,8 +17,7 @@ let cart = [];
 let currentPointsVal = 0; 
 
 const ping = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-let loadOrders = true, loadReturns = true, loadComplaints = true, loadRedeems = true;
-
+let loadOrders = true, loadReturns = true, loadComplaints = true, loadRedeems = true, loadActivations = true;
 // --- LOGIKA AUTH & CEK AKTIVASI ---
 auth.onAuthStateChanged(async (user) => {
     if (user) {
