@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal OKTSHOP17</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <div class="sidebar-brand">OKTSHOP17</div>
+        <div class="sidebar-label">MENU UTAMA</div>
+        <nav id="sidebarNav"></nav>
+    </aside>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <h2 class="auth-title">OKTSHOP17</h2>
+            <div id="authMessage" class="hidden"></div>
+            <div class="auth-tabs">
+                <button onclick="switchAuth('login')" id="tLog" class="tab-btn active">MASUK</button>
+                <button onclick="switchAuth('register')" id="tReg" class="tab-btn">DAFTAR</button>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+                </div>
+                <button type="submit" class="btn-primary">MASUK</button>
+            </form>
+            <form id="registerForm" class="hidden">
+                <div class="input-group">
+                    <input type="text" id="regNama" placeholder="Nama Lengkap" required>
+                    <input type="email" id="regEmail" placeholder="Email" required>
+                    <input type="password" id="regPassword" placeholder="Password" minlength="6" required>
+                </div>
+                <button type="submit" class="btn-primary">DAFTAR & KIRIM WA</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appWrapper" class="hidden">
+        <main id="mainContent">
+            <header class="top-nav">
+                <div class="nav-left">
+                    <button class="menu-toggle" onclick="toggleSidebar(true)">☰</button>
+                    <span class="logo-text">OKTSHOP17</span>
+                </div>
+                <div class="nav-right">
+                    <!-- Tombol Tukar Poin (Hanya muncul di Reseller) -->
+                    <button id="btnTukarPoinHeader" class="btn-gold-sm hidden" onclick="openRedeemModal()" style="margin-right: 8px;">🎁 TUKAR POIN</button>
+                    
+                    <div id="adminNotifHeader" class="notif-box hidden">
+                        <div class="notif-item">📦<span id="badgeOrder" class="badge">0</span></div>
+                        <div class="notif-item">📥<span id="badgeReturn" class="badge">0</span></div>
+                        <div class="notif-item">📢<span id="badgeComplaint" class="badge">0</span></div>
+                    </div>
+                    <button onclick="logout()" class="btn-logout">KELUAR</button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <div class="welcome-container">Halo, <span id="userGreetName">User</span>! 👋</div>
+
+                <!-- DASHBOARD RESELLER -->
+                <section id="secResellerDashboard" class="app-section hidden">
+                    <!-- Teks Berjalan -->
+                    <div class="marquee-container">
+                        <div class="marquee-text">Tingkatkan POIN untuk dapatkan VOUCHER nya! 🔥 Tingkatkan POIN untuk dapatkan VOUCHER nya! 🔥</div>
+                    </div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card c1"><div>QTY</div><div id="resQty" class="stat-value">0</div></div>
+                        <div class="stat-card c2"><div>TOTAL BELANJA</div><div id="resTotal" class="stat-value">Rp 0</div></div>
+                        <div class="stat-card c3"><div>POIN SAAT INI</div><div id="resPoin" class="stat-value">0</div></div>
+                    </div>
+                    <div class="card card-border">
+                        <div class="card-header-flex">
+                            <h3>Riwayat Pesanan</h3>
+                            <button onclick="openOrderModal()" class="btn-gold-sm">🛒 + PESAN</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+                                <tbody id="resellerOrderTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card card-border">
+                        <h3>🏆 Top 10 Reseller Teraktif</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th width="40">No</th><th>Nama Reseller</th><th>Poin</th></tr></thead>
+                                <tbody id="resellerLeaderboardTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DASHBOARD ADMIN -->
+                <section id="secAdminDashboard" class="app-section hidden">
+                    <div class="stat-grid">
+                        <div class="stat-card c1"><div>ORDER</div><div id="admQty" class="stat-value">0</div></div>
+                        <div class="stat-card c2"><div>TOTAL</div><div id="admTotal" class="stat-value">Rp 0</div></div>
+                        <div class="stat-card c3"><div>POIN KELUAR</div><div id="admPoin" class="stat-value">0</div></div>
+                    </div>
+                    <div class="card card-border">
+                        <h3>Pesanan Masuk</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminOrderTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROFIL (DENGAN ID USER) -->
+                <section id="secProfile" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>👤 Profil Akun</h3>
+                        <form id="editProfileForm" class="form-styled">
+                            <label style="font-size:11px; color:#666; margin-left:5px">ID User (Otomatis)</label>
+                            <input type="text" id="profId" readonly style="background:#f9f9f9; color:#C62828; font-weight:800;">
+                            
+                            <label style="font-size:11px; color:#666; margin-left:5px">Email Terdaftar</label>
+                            <input type="text" id="profEmail" readonly style="background:#eee">
+                            
+                            <input type="text" id="profNama" placeholder="Nama Lengkap" required>
+                            <input type="tel" id="profHp" placeholder="WhatsApp" required>
+                            <button type="submit" class="btn-primary">UPDATE PROFIL</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- ADMIN: AKTIVASI AKUN -->
+                <section id="secAdminActivation" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>🔐 Aktivasi Akun Baru</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Nama</th><th>Email</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminActivationTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ADMIN: TUKAR POIN -->
+                <section id="secAdminRedeem" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>🎁 Penukaran Poin Masuk</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>User</th><th>Penerima</th><th>Poin</th><th>WA</th><th>Aksi</th></tr></thead>
+                                <tbody id="adminRedeemTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KATALOG ADMIN -->
+                <section id="secAdminCatalog" class="app-section hidden">
+                    <div class="card card-border">
+                        <h3>📦 Manajemen Katalog</h3>
+                        <form id="adminProductForm" class="form-styled">
+                            <input type="hidden" id="prodId">
+                            <input type="text" id="prodNama" placeholder="Nama Produk" required>
+                            <input type="number" id="prodHarga" placeholder="Harga" required>
+                            <input type="text" id="prodKategori" placeholder="Kategori" required>
+                            <button type="submit" id="btnSaveProduct" class="btn-primary">SIMPAN PRODUK</button>
+                        </form>
+                        <div class="table-container" style="margin-top:15px">
+                            <table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="adminCatalogTable"></tbody></table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RETUR & KELUHAN -->
+                <section id="secResellerReturn" class="app-section hidden">
+                    <div class="card card-border"><h3>📦 Ajukan Retur</h3><form id="resellerReturnForm" class="form-styled"><input type="text" id="retProd" placeholder="Produk" required><textarea id="retReason" placeholder="Alasan"></textarea><input type="tel" id="retHp" placeholder="No WA" required><button type="submit" class="btn-primary">KIRIM</button></form></div>
+                    <div class="card card-border"><h3>📜 Riwayat Retur</h3><div class="table-container"><table><thead><tr><th>Produk</th><th>Nama</th><th>Status</th></tr></thead><tbody id="resellerReturnHistory"></tbody></table></div></div>
+                </section>
+
+                <section id="secResellerComplaint" class="app-section hidden">
+                    <div class="card card-border"><h3>📢 Laporan Keluhan</h3><form id="resellerComplaintForm" class="form-styled"><input type="text" id="compNama" placeholder="Nama Pelapor" required><input type="tel" id="compHp" placeholder="Nomor HP" required><textarea id="compText" placeholder="Isi Keluhan..." required></textarea><button type="submit" class="btn-primary">KIRIM</button></form></div>
+                    <div class="card card-border"><h3>📜 Riwayat Keluhan</h3><div class="table-container"><table><thead><tr><th>Keluhan</th><th>Nama</th><th>Status</th></tr></thead><tbody id="resellerCompHistory"></tbody></table></div></div>
+                </section>
+
+                <!-- ADMIN RANKINGS, RETURN, COMPLAINT -->
+                <section id="secAdminRankings" class="app-section hidden"><div class="card card-border"><h3>🏆 Peringkat Global</h3><div class="table-container"><table><thead><tr><th>No</th><th>Nama</th><th>Poin</th><th>Total</th></tr></thead><tbody id="adminRankTable"></tbody></table></div></div></section>
+                <section id="secAdminReturn" class="app-section hidden"><div class="card card-border"><h3>📥 Returan Masuk</h3><div class="table-container"><table><tbody id="adminReturnTable"></tbody></table></div></div></section>
+                <section id="secAdminComplaint" class="app-section hidden"><div class="card card-border"><h3>📢 Keluhan Masuk</h3><div class="table-container"><table><tbody id="adminCompTable"></tbody></table></div></div></section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL REDEEM -->
+    <div id="redeemModal" class="hidden modal-overlay">
+        <div class="modal-box">
+            <div id="redeemStep1">
+                <h3>🎁 Pilih Poin</h3>
+                <p>Poin Anda: <span id="displayMyPoints" style="font-weight:800; color:#C62828">0</span></p>
+                <select id="redeemAmountSelect" class="styled-input">
+                    <option value="25000">25.000 Poin</option><option value="50000">50.000 Poin</option><option value="100000">100.000 Poin</option><option value="200000">200.000 Poin</option><option value="300000">300.000 Poin</option><option value="400000">400.000 Poin</option><option value="500000">50.000 Poin</option><option value="1000000">1.000.000 Poin</option>
+                </select>
+                <button type="button" onclick="goToRedeemStep2()" class="btn-primary">LANJUT</button><button type="button" onclick="closeRedeemModal()" class="btn-secondary">BATAL</button>
+            </div>
+            <div id="redeemStep2" class="hidden">
+                <h3>👤 Data Penukar</h3>
+                <form id="formRedeemPoints"><input type="text" id="redName" placeholder="Nama" required class="styled-input"><input type="tel" id="redWa" placeholder="WA" required class="styled-input"><button type="submit" class="btn-primary">TUKAR SEKARANG</button><button type="button" onclick="goToRedeemStep1()" class="btn-secondary">KEMBALI</button></form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ORDER -->
+    <div id="orderModal" class="hidden modal-overlay">
+        <div class="modal-box">
+            <div id="orderStep1">
+                <h3>🛒 Pesan Produk</h3>
+                <label style="font-size:11px">Filter Kategori:</label>
+                <select id="ordCatSelect" class="styled-input" onchange="filterProductsByCategory()"></select>
+                <label style="font-size:11px">Pilih Produk:</label>
+                <select id="ordProdSelect" class="styled-input"></select>
+                <input type="number" id="ordQtyInput" value="1" min="1" class="styled-input">
+                <button onclick="addToCart()" class="btn-primary">TAMBAH KE LIST</button>
+                <div class="table-container" style="margin-top:10px; max-height:120px; border:1px solid #eee"><table><tbody id="cartTableBody"></tbody></table></div>
+                <div id="cartTotalText" style="text-align:right; font-weight:800; color:#C62828">Total: Rp 0</div>
+                <button onclick="goToStep2()" class="btn-primary" style="background:#4A633C">PESAN SEKARANG</button>
+                <button onclick="closeOrderModal()" class="btn-secondary">BATAL</button>
+            </div>
+            <div id="orderStep2" class="hidden">
+                <h3>Data Penerima</h3>
+                <form id="orderFormFinal"><input type="text" id="ordCustomer" placeholder="Nama Penerima" required class="styled-input"><input type="tel" id="ordHp" placeholder="No WA" required class="styled-input"><select id="ordPayment" class="styled-input"><option value="Transfer">Transfer</option><option value="COD">COD</option></select><button type="submit" class="btn-primary">KONFIRMASI WHATSAPP</button><button type="button" onclick="goToStep1()" class="btn-secondary">KEMBALI</button></form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
