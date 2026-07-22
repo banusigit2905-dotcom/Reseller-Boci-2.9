@@ -85,6 +85,12 @@
                             <h3>Riwayat Pesanan</h3>
                             <button onclick="openOrderModal()" class="btn-gold-sm">🛒 + PESAN</button>
                         </div>
+                        <div class="filter-group">
+    <label>Filter Tanggal:</label>
+    <input type="date" id="resOrderStart">
+    <input type="date" id="resOrderEnd">
+    <button onclick="filterResellerOrders()" class="btn-gold-sm">Filter</button>
+</div>
                         <div class="table-container"><table><thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerOrderTable"></tbody></table></div>
                     </div>
                     <div class="card card-border">
