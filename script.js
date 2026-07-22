@@ -396,3 +396,82 @@ document.getElementById("loginForm").onsubmit = (e) => { e.preventDefault(); aut
 document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Profil Update!"); };
 document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Retur Dikirim!"); e.target.reset(); };
 document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Keluhan Dikirim!"); e.target.reset(); };
+// --- FUNGSI FILTER TANGGAL (HELPER) ---
+function getQueryByDate(collectionName, startId, endId, resellerOnly = false) {
+    let start = document.getElementById(startId).value;
+    let end = document.getElementById(endId).value;
+    
+    let query = db.collection(collectionName);
+    
+    if (resellerOnly) {
+        query = query.where("resellerId", "==", currentUser.id);
+    }
+    
+    if (start && end) {
+        let startDate = new Date(start + "T00:00:00");
+        let endDate = new Date(end + "T23:59:59");
+        query = query.where("createdAt", ">=", startDate).where("createdAt", "<=", endDate);
+    }
+    
+    return query.orderBy("createdAt", "desc");
+}
+
+// 1. Filter Pesanan Reseller
+function filterResellerOrders() {
+    getQueryByDate("orders", "resOrderStart", "resOrderEnd", true).get().then(snap => {
+        document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td>${o.status}</td></tr>`;
+        }).join('');
+    });
+}
+
+// 2. Filter Pesanan Admin
+function filterAdminOrders() {
+    getQueryByDate("orders", "admOrderStart", "admOrderEnd").get().then(snap => {
+        document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status==='pending'?'🕒':'✅'}</td></tr>`;
+        }).join('');
+    });
+}
+
+// 3. Filter Retur (Reseller)
+function filterResellerReturns() {
+    getQueryByDate("returns", "resRetStart", "resRetEnd", true).get().then(snap => {
+        document.getElementById("resellerReturnHistory").innerHTML = snap.docs.map(doc => {
+            const d = doc.data();
+            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+        }).join('');
+    });
+}
+
+// 4. Filter Retur (Admin)
+function filterAdminReturns() {
+    getQueryByDate("returns", "admRetStart", "admRetEnd").get().then(snap => {
+        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            return `<tr><td><b>${r.nama}</b><br><small>${r.hp}</small></td><td>${r.produk}<br><i style="font-size:10px">${r.alasan}</i></td><td>${r.status === 'proses' ? '🕒' : '✅'}</td></tr>`;
+        }).join('');
+    });
+}
+
+// 5. Filter Keluhan (Reseller)
+function filterResellerComplaints() {
+    getQueryByDate("complaints", "resCompStart", "resCompEnd", true).get().then(snap => {
+        document.getElementById("resellerCompHistory").innerHTML = snap.docs.map(doc => {
+            const d = doc.data();
+            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+        }).join('');
+    });
+}
+
+// 6. Filter Keluhan (Admin)
+function filterAdminComplaints() {
+    getQueryByDate("complaints", "admCompStart", "admCompEnd").get().then(snap => {
+        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+            const c = d.data();
+            return `<tr><td><b>${c.nama}</b><br><small>${c.hp}</small></td><td>${c.pesan}</td><td>${c.status === 'proses' ? '🕒' : '✅'}</td></tr>`;
+        }).join('');
+    });
+}
