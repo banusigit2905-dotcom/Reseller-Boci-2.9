@@ -86,11 +86,13 @@
                         </div>
                         <div class="table-container"><table><thead><tr><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody id="resellerOrderTable"></tbody></table></div>
                     </div>
-                    <div class="card card-border">
-                        <h3>🏆 Top 10 Reseller Teraktif</h3>
-                        <div class="table-container"><table><thead><tr><th>No</th><th>Nama Reseller</th><th>Poin</th></tr></thead><tbody id="resellerLeaderboardTable"></tbody></table></div>
-                    </div>
-                </section>
+                    <div class="pagination-container">
+            <button class="btn-nav" id="prevRank" onclick="changeRankPage(-1)"> < </button>
+            <span class="page-info" id="rankPageInfo">Rangking 1 - 10</span>
+            <button class="btn-nav" id="nextRank" onclick="changeRankPage(1)"> > </button>
+        </div>
+    </div>
+</section>
 
                 <!-- DASHBOARD ADMIN -->
                 <section id="secAdminDashboard" class="app-section hidden">
