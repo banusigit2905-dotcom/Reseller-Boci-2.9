@@ -373,105 +373,50 @@ document.getElementById("formRedeemPoints").onsubmit = async (e) => {
         } catch(err) { alert(err.message); }
     }
 };
+// Fungsi pembantu untuk filter tanggal
+async function performFilter(collectionName, startId, endId, tableId, renderRowFn, resellerOnly = false) {
+    const startVal = document.getElementById(startId).value;
+    const endVal = document.getElementById(endId).value;
 
-async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
-function logout() { auth.signOut(); }
-function toggleSidebar(f) {
-    const s = document.getElementById("sidebar"), o = document.getElementById("sidebarOverlay");
-    if(f===false){ s.classList.remove("active"); o.classList.remove("active"); }
-    else { s.classList.toggle("active"); o.classList.toggle("active"); }
-}
-function switchAuth(m) {
-    document.getElementById("loginForm").classList.toggle("hidden", m==='register');
-    document.getElementById("registerForm").classList.toggle("hidden", m==='login');
-    document.getElementById("tLog").classList.toggle("active", m==='login');
-    document.getElementById("tReg").classList.toggle("active", m==='register');
-}
-function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
-function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
-function goToStep2() { if (cart.length === 0) return alert("Pilih produk!"); document.getElementById("orderStep1").classList.add("hidden"); document.getElementById("orderStep2").classList.remove("hidden"); }
-function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
+    if (!startVal || !endVal) return alert("Pilih kedua tanggal!");
 
-document.getElementById("loginForm").onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value); };
-document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Profil Update!"); };
-document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Retur Dikirim!"); e.target.reset(); };
-document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Keluhan Dikirim!"); e.target.reset(); };
-// --- FUNGSI FILTER TANGGAL (HELPER) ---
-function getQueryByDate(collectionName, startId, endId, resellerOnly = false) {
-    let start = document.getElementById(startId).value;
-    let end = document.getElementById(endId).value;
-    
+    let start = new Date(startVal + "T00:00:00");
+    let end = new Date(endVal + "T23:59:59");
+
     let query = db.collection(collectionName);
-    
-    if (resellerOnly) {
-        query = query.where("resellerId", "==", currentUser.id);
+    if (resellerOnly) query = query.where("resellerId", "==", currentUser.id);
+
+    try {
+        const snap = await query.where("createdAt", ">=", start).where("createdAt", "<=", end).orderBy("createdAt", "desc").get();
+        const table = document.getElementById(tableId);
+        if (snap.empty) {
+            table.innerHTML = '<tr><td colspan="4" style="text-align:center">Data tidak ditemukan</td></tr>';
+        } else {
+            table.innerHTML = snap.docs.map(doc => renderRowFn(doc.data(), doc.id)).join('');
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Gagal memfilter. Pastikan Index Firestore sudah dibuat.");
     }
-    
-    if (start && end) {
-        let startDate = new Date(start + "T00:00:00");
-        let endDate = new Date(end + "T23:59:59");
-        query = query.where("createdAt", ">=", startDate).where("createdAt", "<=", endDate);
-    }
-    
-    return query.orderBy("createdAt", "desc");
 }
 
 // 1. Filter Pesanan Reseller
 function filterResellerOrders() {
-    getQueryByDate("orders", "resOrderStart", "resOrderEnd", true).get().then(snap => {
-        document.getElementById("resellerOrderTable").innerHTML = snap.docs.map(d => {
-            const o = d.data();
-            return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td>${o.status}</td></tr>`;
-        }).join('');
-    });
+    performFilter("orders", "resOrdStart", "resOrdEnd", "resellerOrderTable", (o) => {
+        return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td>${o.status}</td></tr>`;
+    }, true);
 }
 
-// 2. Filter Pesanan Admin
-function filterAdminOrders() {
-    getQueryByDate("orders", "admOrderStart", "admOrderEnd").get().then(snap => {
-        document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
-            const o = d.data();
-            return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status==='pending'?'🕒':'✅'}</td></tr>`;
-        }).join('');
-    });
-}
-
-// 3. Filter Retur (Reseller)
+// 2. Filter Retur Reseller
 function filterResellerReturns() {
-    getQueryByDate("returns", "resRetStart", "resRetEnd", true).get().then(snap => {
-        document.getElementById("resellerReturnHistory").innerHTML = snap.docs.map(doc => {
-            const d = doc.data();
-            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('');
-    });
+    performFilter("returns", "resRetStart", "resRetEnd", "resellerReturnHistory", (d) => {
+        return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+    }, true);
 }
 
-// 4. Filter Retur (Admin)
-function filterAdminReturns() {
-    getQueryByDate("returns", "admRetStart", "admRetEnd").get().then(snap => {
-        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr><td><b>${r.nama}</b><br><small>${r.hp}</small></td><td>${r.produk}<br><i style="font-size:10px">${r.alasan}</i></td><td>${r.status === 'proses' ? '🕒' : '✅'}</td></tr>`;
-        }).join('');
-    });
-}
-
-// 5. Filter Keluhan (Reseller)
+// 3. Filter Keluhan Reseller
 function filterResellerComplaints() {
-    getQueryByDate("complaints", "resCompStart", "resCompEnd", true).get().then(snap => {
-        document.getElementById("resellerCompHistory").innerHTML = snap.docs.map(doc => {
-            const d = doc.data();
-            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('');
-    });
-}
-
-// 6. Filter Keluhan (Admin)
-function filterAdminComplaints() {
-    getQueryByDate("complaints", "admCompStart", "admCompEnd").get().then(snap => {
-        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
-            const c = d.data();
-            return `<tr><td><b>${c.nama}</b><br><small>${c.hp}</small></td><td>${c.pesan}</td><td>${c.status === 'proses' ? '🕒' : '✅'}</td></tr>`;
-        }).join('');
-    });
+    performFilter("complaints", "resCompStart", "resCompEnd", "resellerCompHistory", (d) => {
+        return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+    }, true);
 }
