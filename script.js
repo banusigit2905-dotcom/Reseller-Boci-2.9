@@ -43,34 +43,22 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 function initApp() {
-    function initApp() {
+    // 1. Tampilkan Aplikasi
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("appWrapper").classList.remove("hidden");
-    document.getElementById("userGreetName").innerText = currentUser.nama || "User";
     
-    // --- TAMBAHKAN BARIS INI ---
+    // 2. Isi Nama & Custom ID (Agar tidak muncul tanda strip)
+    document.getElementById("userGreetName").innerText = currentUser.nama || "User";
     if(document.getElementById("customId")) {
         document.getElementById("customId").innerText = currentUser.customId || "-";
     }
-    // ---------------------------
 
+    // 3. Isi Form Profil
     if(document.getElementById("profEmail")) document.getElementById("profEmail").value = currentUser.email || "";
     if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
     if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
 
-    renderSidebar();
-    syncCatalog();
-
-    // ... sisa kode lainnya
-}
-    document.getElementById("loginScreen").classList.add("hidden");
-    document.getElementById("appWrapper").classList.remove("hidden");
-    document.getElementById("userGreetName").innerText = currentUser.nama || "User";
-    
-    if(document.getElementById("profEmail")) document.getElementById("profEmail").value = currentUser.email || "";
-    if(document.getElementById("profNama")) document.getElementById("profNama").value = currentUser.nama || "";
-    if(document.getElementById("profHp")) document.getElementById("profHp").value = currentUser.hp || "";
-
+    // 4. Jalankan Menu
     renderSidebar();
     syncCatalog();
 
@@ -87,7 +75,6 @@ function initApp() {
         loadResellerHistory();
     }
 }
-
 // --- LOGIKA DAFTAR (CUSTOM ID & WA) ---
 document.getElementById("registerForm").onsubmit = async (e) => {
     e.preventDefault();
