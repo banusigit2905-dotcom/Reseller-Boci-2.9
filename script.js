@@ -113,13 +113,19 @@ document.getElementById("registerForm").onsubmit = async (e) => {
 
 // --- LOGIKA POIN RESELLER ---
 function loadResellerData() {
+    const startDate = document.getElementById("filterStart").value;
+    const endDate = document.getElementById("filterEnd").value;
+
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(sOrders => {
         db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
             let q = 0, t = 0;
+            
+            // Hitung total poin & qty tanpa filter (untuk kartu statistik)
             sOrders.docs.forEach(d => {
                 const o = d.data();
                 if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
             });
+
             let usedPoints = 0;
             sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
             currentPointsVal = Math.floor(t / 100) - usedPoints;
@@ -128,7 +134,20 @@ function loadResellerData() {
             document.getElementById("resTotal").innerText = "Rp " + t.toLocaleString('id-ID');
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
             document.getElementById("displayMyPoints").innerText = currentPointsVal.toLocaleString('id-ID');
-            document.getElementById("resellerOrderTable").innerHTML = sOrders.docs.map(d => {
+
+            // Render Tabel dengan Filter Tanggal
+            let filteredDocs = sOrders.docs;
+            if (startDate && endDate) {
+                const start = new Date(startDate).getTime();
+                const end = new Date(endDate).setHours(23,59,59,999);
+                
+                filteredDocs = sOrders.docs.filter(d => {
+                    const created = d.data().createdAt?.toDate().getTime();
+                    return created >= start && created <= end;
+                });
+            }
+
+            document.getElementById("resellerOrderTable").innerHTML = filteredDocs.map(d => {
                 const o = d.data();
                 return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td>${o.status}</td></tr>`;
             }).join('');
