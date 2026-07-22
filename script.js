@@ -15,6 +15,8 @@ let currentUser = null;
 let catalog = [];
 let cart = [];
 let currentPointsVal = 0; 
+let currentRankPage = 0; // 0 = 1-10, 1 = 11-20, dst.
+let allRankings = [];
 
 const ping = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
 let loadOrders = true, loadReturns = true, loadComplaints = true, loadRedeems = true, loadActivations = true;
