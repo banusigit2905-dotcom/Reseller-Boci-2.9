@@ -331,55 +331,49 @@ async function loadRankings() {
 async function loadResellerLeaderboard() {
     const us = await db.collection("users").where("role", "==", "reseller").get();
     const os = await db.collection("orders").where("status", "==", "Selesai").get();
-    const all = os.docs.map(d => d.data());
-    let ldb = us.docs.map(u => {
-        const total = all.filter(o => o.resellerId === u.id).reduce((s, o) => s + (o.total || 0), 0);
+    const allOrders = os.docs.map(d => d.data());
+
+    // Hitung semua rangking
+    allRankings = us.docs.map(u => {
+        const total = allOrders.filter(o => o.resellerId === u.id).reduce((s, o) => s + (o.total || 0), 0);
         return { nama: u.data().nama, poin: Math.floor(total / 100) };
     });
-    ldb.sort((a, b) => b.poin - a.poin);
-    document.getElementById("resellerLeaderboardTable").innerHTML = ldb.slice(0, 10).map((res, i) => `<tr><td>${i+1}</td><td>${res.nama}</td><td>${res.poin.toLocaleString('id-ID')} Poin</td></tr>`).join('');
+
+    // Urutkan dari poin tertinggi
+    allRankings.sort((a, b) => b.poin - a.poin);
+
+    renderRankTable();
 }
 
-function loadResellerHistory() {
-    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(doc => {
-            const d = doc.data();
-            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('');
-    });
-    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(doc => {
-            const d = doc.data();
-            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('');
-    });
+function renderRankTable() {
+    const startIdx = currentRankPage * 10;
+    const endIdx = startIdx + 10;
+    const pageData = allRankings.slice(startIdx, endIdx);
+
+    // Update Tampilan Tabel
+    document.getElementById("resellerLeaderboardTable").innerHTML = pageData.map((res, i) => `
+        <tr>
+            <td>${startIdx + i + 1}</td>
+            <td>${res.nama}</td>
+            <td>${res.poin.toLocaleString('id-ID')} Poin</td>
+        </tr>
+    `).join('');
+
+    // Update Info Halaman
+    document.getElementById("rankPageInfo").innerText = `Rangking ${startIdx + 1} - ${Math.min(endIdx, 50)}`;
+
+    // Update Button State
+    document.getElementById("prevRank").disabled = (currentRankPage === 0);
+    // Maksimal 50 rangking = 5 halaman (0,1,2,3,4)
+    document.getElementById("nextRank").disabled = (currentRankPage >= 4 || endIdx >= allRankings.length);
 }
 
-function openRedeemModal() { document.getElementById("redeemModal").classList.remove("hidden"); goToRedeemStep1(); }
-function closeRedeemModal() { document.getElementById("redeemModal").classList.add("hidden"); }
-function goToRedeemStep1() { document.getElementById("redeemStep1").classList.remove("hidden"); document.getElementById("redeemStep2").classList.add("hidden"); }
-function goToRedeemStep2() { 
-    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
-    if(currentPointsVal < amount) return alert("Poin Anda tidak mencukupi!");
-    document.getElementById("redeemStep1").classList.add("hidden"); 
-    document.getElementById("redeemStep2").classList.remove("hidden"); 
+function changeRankPage(dir) {
+    currentRankPage += dir;
+    if (currentRankPage < 0) currentRankPage = 0;
+    if (currentRankPage > 4) currentRankPage = 4;
+    renderRankTable();
 }
-
-document.getElementById("formRedeemPoints").onsubmit = async (e) => {
-    e.preventDefault();
-    const amount = parseInt(document.getElementById("redeemAmountSelect").value);
-    if(confirm(`Konfirmasi penukaran ${amount.toLocaleString()} Poin?`)) {
-        try {
-            await db.collection("redemptions").add({
-                resellerId: currentUser.id, resellerName: currentUser.nama,
-                redeemName: document.getElementById("redName").value,
-                wa: document.getElementById("redWa").value, points: amount,
-                status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Pengajuan Berhasil!"); closeRedeemModal();
-        } catch(err) { alert(err.message); }
-    }
-};
 
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 function logout() { auth.signOut(); }
