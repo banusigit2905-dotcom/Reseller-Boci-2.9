@@ -108,6 +108,11 @@
                     </div>
                     <div class="card card-border">
                         <h3>Pesanan Masuk</h3>
+                        <div class="filter-group">
+    <label>Dari:</label><input type="date" id="admOrderStart">
+    <label>Sampai:</label><input type="date" id="admOrderEnd">
+    <button onclick="filterAdminOrders()" class="btn-gold-sm">Filter</button>
+</div>
                         <div class="table-container"><table><thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Aksi</th></tr></thead><tbody id="adminOrderTable"></tbody></table></div>
                     </div>
                 </section>
