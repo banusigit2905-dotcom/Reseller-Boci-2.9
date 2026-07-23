@@ -171,25 +171,39 @@
                             <input type="text" id="prodKategori" placeholder="Kategori" required>
                             <button type="submit" class="btn-primary">SIMPAN PRODUK</button>
                         </form>
-                        <div class="table-container"><table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="adminCatalogTable"></tbody></table></div>
-                    </div>
+                        <div class="table-container">
+    <table>
+        <thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="adminOrderTable"></tbody>
+    </table>
+</div>
                 </section>
 
                 <!-- RETUR MASUK (ADMIN) -->
                 <section id="secAdminReturn" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>📥 Returan Masuk (Admin)</h3>
-                        <div class="table-container"><table><thead><tr><th>Reseller</th><th>Produk/Alasan</th><th>Aksi</th></tr></thead><tbody id="adminReturnTable"></tbody></table></div>
-                    </div>
-                </section>
+    <div class="card card-border">
+        <h3>📥 Returan Masuk (Admin)</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Reseller</th><th>Produk/Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="adminReturnTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- KELUHAN MASUK (ADMIN) -->
                 <section id="secAdminComplaint" class="app-section hidden">
-                    <div class="card card-border">
-                        <h3>📢 Keluhan Masuk (Admin)</h3>
-                        <div class="table-container"><table><thead><tr><th>Pelapor</th><th>Isi Keluhan</th><th>Aksi</th></tr></thead><tbody id="adminCompTable"></tbody></table></div>
-                    </div>
-                </section>
+    <div class="card card-border">
+        <h3>📢 Keluhan Masuk (Admin)</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Pelapor</th><th>Isi Keluhan</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="adminCompTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
                 <!-- PROFIL -->
                 <section id="secProfile" class="app-section hidden">
