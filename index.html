@@ -130,34 +130,102 @@
                         <h3>Monitoring Pesanan (Admin)</h3>
                         
                         <!-- FILTER ADMIN -->
-                        <div class="filter-row" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin-bottom: 10px;">
-                            <div style="flex: 2;">
-                                <input type="text" id="admSearchReseller" placeholder="Cari Nama Reseller..." onkeyup="loadAdminData()" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
-                            </div>
-                            <div style="flex: 1;">
-                                <input type="date" id="admFilterStart" onchange="loadAdminData()" style="width: 100%; padding: 7px; border-radius: 5px; border: 1px solid #ddd;">
-                            </div>
-                            <div style="color: #666; font-size: 11px; align-self: center;">s/d</div>
-                            <div style="flex: 1;">
-                                <input type="date" id="admFilterEnd" onchange="loadAdminData()" style="width: 100%; padding: 7px; border-radius: 5px; border: 1px solid #ddd;">
-                            </div>
-                            <button onclick="resetAdminFilter()" class="btn-secondary" style="width: auto; margin:0; padding: 8px 12px; font-size: 10px;">Reset</button>
-                        </div>
+                        <div class="filter-row" style="background: rgba(0,0,0,0.05); padding: 10px; border-radius: 10px; margin-bottom: 10px;"><section id="secAdminActivation" class="app-section hidden">
+    <div class="card card-border">
+        <h3>🔑 Aktivasi Akun Baru</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>Aksi</th></tr></thead>
+                <tbody id="adminActivationTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Reseller</th><th>Customer</th><th>Produk</th><th>Total</th><th>Aksi</th></tr></thead>
-                                <tbody id="adminOrderTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
+<section id="secAdminRedeem" class="app-section hidden">
+    <div class="card card-border">
+        <h3>🎁 Penukaran Poin Masuk</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>User</th><th>Poin</th><th>Aksi</th></tr></thead>
+                <tbody id="adminRedeemTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
-                <!-- SECTION LAINNYA -->
-                <section id="secAdminActivation" class="app-section hidden"><div class="card card-border"><h3>🔑 Aktivasi Akun Baru</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>Aksi</th></tr></thead><tbody id="adminActivationTable"></tbody></table></div></div></section>
-                <section id="secAdminRedeem" class="app-section hidden"><div class="card card-border"><h3>🎁 Penukaran Poin Masuk</h3><div class="table-container"><table><thead><tr><th>User</th><th>Poin</th><th>Aksi</th></tr></thead><tbody id="adminRedeemTable"></tbody></table></div></div></section>
-                <section id="secAdminCatalog" class="app-section hidden"><div class="card card-border"><h3>📦 Katalog</h3><div class="table-container"><table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="adminCatalogTable"></tbody></table></div></div></section>
+<section id="secAdminCatalog" class="app-section hidden">
+    <div class="card card-border">
+        <h3>📦 Katalog</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
+                <tbody id="adminCatalogTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
                 <section id="secProfile" class="app-section hidden"><div class="card card-border"><h3>👤 Profil (<span id="customId">-</span>)</h3><form id="editProfileForm" class="form-styled"><input type="text" id="profEmail" readonly style="background:#eee"><input type="text" id="profNama" required><input type="tel" id="profHp" required><button type="submit" class="btn-primary">UPDATE</button></form></div></section>
+
+<section id="secAdminRankings" class="app-section hidden">
+    <div class="card card-border">
+        <h3>🏆 Peringkat Reseller Keseluruhan</h3>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Rank</th><th>Nama Reseller</th><th>Total Poin</th><th>Total Omset</th></tr></thead>
+                <tbody id="adminRankTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+                            <!-- MENU RETUR ADMIN (DENGAN FILTER) -->
+<section id="secAdminReturn" class="app-section hidden">
+    <div class="card card-border">
+        <h3>📥 Laporan Retur Masuk</h3>
+        <div class="filter-row">
+            <input type="text" id="admSearchReturn" placeholder="Cari Reseller..." onkeyup="loadAdminReturnData()">
+            <input type="date" id="admReturnDate" onchange="loadAdminReturnData()">
+            <button onclick="resetAdminReturnFilter()" class="btn-secondary" style="width:auto; margin:0;">Reset</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Reseller</th><th>Produk</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="adminReturnTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- MENU KELUHAN ADMIN (DENGAN FILTER) -->
+<section id="secAdminComplaint" class="app-section hidden">
+    <div class="card card-border">
+        <h3>📢 Laporan Keluhan Masuk</h3>
+        <div class="filter-row">
+            <input type="text" id="admSearchComp" placeholder="Cari Pelapor..." onkeyup="loadAdminCompData()">
+            <input type="date" id="admCompDate" onchange="loadAdminCompData()">
+            <button onclick="resetAdminCompFilter()" class="btn-secondary" style="width:auto; margin:0;">Reset</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Pelapor</th><th>Isi Keluhan</th><th>WA</th><th>Status</th><th>Aksi</th></tr></thead>
+                <tbody id="adminCompTable"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section id="secProfile" class="app-section hidden">
+    <div class="card card-border">
+        <h3>👤 Profil (<span id="customId">-</span>)</h3>
+        <form id="editProfileForm" class="form-styled">
+            <input type="text" id="profEmail" readonly style="background:#eee">
+            <input type="text" id="profNama" required>
+            <input type="tel" id="profHp" required>
+            <button type="submit" class="btn-primary">UPDATE</button>
+        </form>
+    </div>
+</section>
+                            
                 <!-- BAGIAN RETUR -->
                
                 <section id="secResellerReturn" class="app-section hidden">
