@@ -131,7 +131,7 @@ function loadResellerData() {
                     const created = d.data().createdAt?.toDate().getTime();
                     return created >= startRange && created <= endRange;
                 });
-                emptyMsg = "Tidak ada pesanan pada periode ini";
+                emptyMsg = "Tidak ada pesanan";
             } else {
                 const todayStart = new Date().setHours(0, 0, 0, 0);
                 const todayEnd = new Date().setHours(23, 59, 59, 999);
@@ -154,18 +154,83 @@ function loadResellerData() {
     });
 }
 
-// --- LOGIKA DATA ADMIN DENGAN FILTER ---
-function resetAdminFilter() {
-    document.getElementById("admSearchReseller").value = "";
-    document.getElementById("admFilterStart").value = "";
-    document.getElementById("admFilterEnd").value = "";
-    loadAdminData();
+// --- FUNGSI FILTER & LOAD RETUR ADMIN ---
+function resetAdminReturnFilter() {
+    document.getElementById("admSearchReturn").value = "";
+    document.getElementById("admReturnDate").value = "";
+    loadAdminReturnData();
 }
 
-function loadAdminData() {
-    const search = document.getElementById("admSearchReseller").value.toLowerCase();
-    const start = document.getElementById("admFilterStart").value;
-    const end = document.getElementById("admFilterEnd").value;
+function loadAdminReturnData() {
+    const search = document.getElementById("admSearchReturn").value.toLowerCase();
+    const date = document.getElementById("admReturnDate").value;
+
+    db.collection("returns").orderBy("createdAt", "desc").onSnapshot(snap => {
+        let filtered = snap.docs;
+
+        if(search) {
+            filtered = filtered.filter(d => d.data().resellerName?.toLowerCase().includes(search));
+        }
+        if(date) {
+            const start = new Date(date).setHours(0,0,0,0);
+            const end = new Date(date).setHours(23,59,59,999);
+            filtered = filtered.filter(d => {
+                const c = d.data().createdAt?.toDate().getTime();
+                return c >= start && c <= end;
+            });
+        }
+
+        document.getElementById("adminReturnTable").innerHTML = filtered.map(d => {
+            const data = d.data();
+            return `<tr>
+                <td><b>${data.resellerName}</b></td>
+                <td>${data.produk}</td>
+                <td>${data.alasan}</td>
+                <td><span style="color:${data.status==='Selesai'?'green':'orange'}">${data.status}</span></td>
+                <td>${data.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" class="btn-gold-sm">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada data</td></tr>';
+    });
+}
+
+// --- FUNGSI FILTER & LOAD KELUHAN ADMIN ---
+function resetAdminCompFilter() {
+    document.getElementById("admSearchComp").value = "";
+    document.getElementById("admCompDate").value = "";
+    loadAdminCompData();
+}
+
+function loadAdminCompData() {
+    const search = document.getElementById("admSearchComp").value.toLowerCase();
+    const date = document.getElementById("admCompDate").value;
+
+    db.collection("complaints").orderBy("createdAt", "desc").onSnapshot(snap => {
+        let filtered = snap.docs;
+
+        if(search) {
+            filtered = filtered.filter(d => d.data().nama?.toLowerCase().includes(search));
+        }
+        if(date) {
+            const start = new Date(date).setHours(0,0,0,0);
+            const end = new Date(date).setHours(23,59,59,999);
+            filtered = filtered.filter(d => {
+                const c = d.data().createdAt?.toDate().getTime();
+                return c >= start && c <= end;
+            });
+        }
+
+        document.getElementById("adminCompTable").innerHTML = filtered.map(d => {
+            const data = d.data();
+            return `<tr>
+                <td><b>${data.nama}</b></td>
+                <td>${data.pesan}</td>
+                <td>${data.hp}</td>
+                <td><span style="color:${data.status==='Selesai'?'green':'orange'}">${data.status}</span></td>
+                <td>${data.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" class="btn-gold-sm">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada data</td></tr>';
+    });
+}
 
     // Monitor Aktivasi
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
@@ -361,20 +426,39 @@ function renderSidebar() {
 function showSection(id) {
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
+    
     if(id === 'secAdminActivation') loadActivationList();
     if(id === 'secAdminRankings') loadRankings();
+    if(id === 'secAdminReturn') loadAdminReturnData();
+    if(id === 'secAdminComplaint') loadAdminCompData();
+    
     toggleSidebar(false);
 }
 
 async function loadRankings() {
     const us = await db.collection("users").where("role", "==", "reseller").get();
     const os = await db.collection("orders").where("status", "==", "Selesai").get();
-    const all = os.docs.map(d => d.data());
+    const allOrders = os.docs.map(d => d.data());
+    
     let ranks = us.docs.map(u => {
-        const total = all.filter(o => o.resellerId === u.id).reduce((s, o) => s + (o.total || 0), 0);
-        return { nama: u.data().nama, total, poin: Math.floor(total / 100) };
+        const userData = u.data();
+        const userOrders = allOrders.filter(o => o.resellerId === u.id);
+        const totalOmset = userOrders.reduce((s, o) => s + (o.total || 0), 0);
+        return { 
+            nama: userData.nama || "Tanpa Nama", 
+            total: totalOmset, 
+            poin: Math.floor(totalOmset / 100) 
+        };
     }).sort((a, b) => b.total - a.total);
-    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `<tr><td>${i+1}</td><td>${r.nama}</td><td>${r.poin}</td><td>Rp ${r.total.toLocaleString('id-ID')}</td></tr>`).join('');
+
+    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `
+        <tr>
+            <td>${i+1}</td>
+            <td><b>${r.nama}</b></td>
+            <td>${r.poin.toLocaleString()} Poin</td>
+            <td>Rp ${r.total.toLocaleString('id-ID')}</td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada data peringkat</td></tr>';
 }
 
 function openRedeemModal() { document.getElementById("redeemModal").classList.remove("hidden"); goToRedeemStep1(); }
@@ -432,5 +516,29 @@ document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
         });
         alert("Keluhan Berhasil Dikirim!");
         e.target.reset();
-    } catch (err) { alert("Gagal: " + err.message); }
+    } catch (err) { alert("Gagal: " + err.message); }async function loadRankings() {
+    const us = await db.collection("users").where("role", "==", "reseller").get();
+    const os = await db.collection("orders").where("status", "==", "Selesai").get();
+    const allOrders = os.docs.map(d => d.data());
+    
+    let ranks = us.docs.map(u => {
+        const userData = u.data();
+        const userOrders = allOrders.filter(o => o.resellerId === u.id);
+        const totalOmset = userOrders.reduce((s, o) => s + (o.total || 0), 0);
+        return { 
+            nama: userData.nama || "Tanpa Nama", 
+            total: totalOmset, 
+            poin: Math.floor(totalOmset / 100) 
+        };
+    }).sort((a, b) => b.total - a.total);
+
+    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `
+        <tr>
+            <td>${i+1}</td>
+            <td><b>${r.nama}</b></td>
+            <td>${r.poin.toLocaleString()} Poin</td>
+            <td>Rp ${r.total.toLocaleString('id-ID')}</td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada data peringkat</td></tr>';
+    }
 };
