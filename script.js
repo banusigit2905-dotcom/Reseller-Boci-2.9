@@ -399,3 +399,38 @@ function goToStep2() { if(!cart.length) return alert("Pilih produk!"); document.
 function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
 document.getElementById("loginForm").onsubmit = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value); };
 document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Updated!"); };
+
+// --- FIX: PENGIRIMAN FORM ---
+document.getElementById("resellerReturnForm").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+        await db.collection("returns").add({
+            resellerId: currentUser.id,
+            resellerName: currentUser.nama,
+            produk: document.getElementById("retProd").value,
+            alasan: document.getElementById("retReason").value,
+            hp: document.getElementById("retHp").value,
+            status: "proses",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Retur Berhasil Dikirim!");
+        e.target.reset();
+    } catch (err) { alert("Gagal: " + err.message); }
+};
+
+document.getElementById("resellerComplaintForm").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+        await db.collection("complaints").add({
+            resellerId: currentUser.id,
+            resellerName: currentUser.nama,
+            nama: document.getElementById("compNama").value,
+            hp: document.getElementById("compHp").value,
+            pesan: document.getElementById("compText").value,
+            status: "proses",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Keluhan Berhasil Dikirim!");
+        e.target.reset();
+    } catch (err) { alert("Gagal: " + err.message); }
+};
