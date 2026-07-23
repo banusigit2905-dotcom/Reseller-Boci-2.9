@@ -223,19 +223,31 @@ function loadAdminData() {
 
 // --- RIWAYAT RETUR & KELUHAN (Safe Sort) ---
 function loadResellerHistory() {
+    // Retur
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
         let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
         document.getElementById("resellerReturnHistory").innerHTML = sorted.map(doc => {
             const d = doc.data();
-            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+            return `<tr>
+                <td><b>${d.produk}</b></td>
+                <td>${d.alasan || '-'}</td>
+                <td>${d.hp}</td>
+                <td><span style="color:${d.status==='Selesai'?'green':'orange'}; font-weight:800;">${d.status || 'proses'}</span></td>
+            </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat retur</td></tr>';
     });
 
+    // Keluhan
     db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
         let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
         document.getElementById("resellerCompHistory").innerHTML = sorted.map(doc => {
             const d = doc.data();
-            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+            return `<tr>
+                <td>${d.pesan}</td>
+                <td>${d.nama}</td>
+                <td>${d.hp}</td>
+                <td><span style="color:${d.status==='Selesai'?'green':'orange'}; font-weight:800;">${d.status || 'proses'}</span></td>
+            </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat keluhan</td></tr>';
     });
 }
