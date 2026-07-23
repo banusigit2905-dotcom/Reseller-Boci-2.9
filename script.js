@@ -173,7 +173,7 @@ function loadAdminData() {
         loadActivations = false;
         document.getElementById("badgeActivation").innerText = snap.size;
     });
-
+    
     // Monitor Pesanan & Hitung Statistik
     db.collection("orders").onSnapshot(snap => {
         if (!loadOrders) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
@@ -181,6 +181,41 @@ function loadAdminData() {
         
         let allDocs = snap.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
 
+        let filtered = allDocs;
+        if(search) filtered = filtered.filter(d => d.data().resellerName?.toLowerCase().includes(search));
+        if(start && end) {
+            const sT = new Date(start).setHours(0,0,0,0);
+            const eT = new Date(end).setHours(23,59,59,999);
+            filtered = filtered.filter(d => {
+                const c = d.data().createdAt?.toDate().getTime();
+                return c >= sT && c <= eT;
+            });
+        }
+
+        let q=0, t=0, pending=0;
+        document.getElementById("adminOrderTable").innerHTML = filtered.map(d => {
+            const o = d.data();
+            if(o.status === 'Selesai') { q++; t += (o.total || 0); }
+            if(o.status === 'pending') pending++;
+            
+// Warna Status
+            const colorStatus = o.status === 'Selesai' ? 'green' : 'red';
+            return `<tr>
+                <td><b>${o.resellerName}</b></td>
+                <td>${o.customerName}</td>
+                <td>${o.produk}</td>
+                <td>Rp ${o.total.toLocaleString('id-ID')}</td>
+                <td style="color:${colorStatus}; font-weight:bold;">${o.status}</td>
+                <td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')" style="background:#F2A93B; border:none; padding:5px 10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;">Selesai</button>`:'✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="6" style="text-align:center; padding:20px;">Data tidak ditemukan</td></tr>';
+
+        document.getElementById("badgeOrder").innerText = pending;
+        document.getElementById("admQty").innerText = q;
+        document.getElementById("admTotal").innerText = "Rp " + t.toLocaleString('id-ID');
+        document.getElementById("admPoin").innerText = Math.floor(t/100).toLocaleString('id-ID');
+    });
+            
         // Filter pencarian dan tanggal
         let filtered = allDocs;
         if(search) filtered = filtered.filter(d => d.data().resellerName?.toLowerCase().includes(search));
@@ -224,31 +259,36 @@ function loadAdminData() {
 // --- RIWAYAT RETUR & KELUHAN (Safe Sort) ---
 function loadResellerHistory() {
     // Retur
-    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-        document.getElementById("resellerReturnHistory").innerHTML = sorted.map(doc => {
-            const d = doc.data();
+    db.collection("returns").onSnapshot(s => {
+        document.getElementById("badgeReturn").innerText = s.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminReturnTable").innerHTML = s.docs.map(d => {
+            const data = d.data();
+            const color = data.status === 'Selesai' ? 'green' : 'red';
             return `<tr>
-                <td><b>${d.produk}</b></td>
-                <td>${d.alasan || '-'}</td>
-                <td>${d.hp}</td>
-                <td><span style="color:${d.status==='Selesai'?'green':'orange'}; font-weight:800;">${d.status || 'proses'}</span></td>
+                <td><b>${data.resellerName || 'Reseller'}</b></td>
+                <td>${data.produk} (${data.alasan})</td>
+                <td style="color:${color}; font-weight:bold;">${data.status || 'proses'}</td>
+                <td>${data.status === 'Selesai' ? '✅' : `<button onclick="updateStat('returns','${d.id}')" style="background:#4A633C; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Selesai</button>`}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat retur</td></tr>';
+        }).join('');
+    });
+    // Keluhan
+    db.collection("complaints").onSnapshot(s => {
+        document.getElementById("badgeComplaint").innerText = s.docs.filter(d => d.data().status === 'proses').length;
+        document.getElementById("adminCompTable").innerHTML = s.docs.map(d => {
+            const data = d.data();
+            const color = data.status === 'Selesai' ? 'green' : 'red';
+            return `<tr>
+                <td><b>${data.nama}</b></td>
+                <td>${data.pesan}</td>
+                <td style="color:${color}; font-weight:bold;">${data.status || 'proses'}</td>
+                <td>${data.status === 'Selesai' ? '✅' : `<button onclick="updateStat('complaints','${d.id}')" style="background:#4A633C; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Selesai</button>`}</td>
+            </tr>`;
+        }).join('');
     });
 
-    // Keluhan
-    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-        document.getElementById("resellerCompHistory").innerHTML = sorted.map(doc => {
-            const d = doc.data();
-            return `<tr>
-                <td>${d.pesan}</td>
-                <td>${d.nama}</td>
-                <td>${d.hp}</td>
-                <td><span style="color:${d.status==='Selesai'?'green':'orange'}; font-weight:800;">${d.status || 'proses'}</span></td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat keluhan</td></tr>';
+    db.collection("redemptions").onSnapshot(s => {
+        document.getElementById("adminRedeemTable").innerHTML = s.docs.map(d => `<tr><td><b>${d.data().resellerName}</b></td><td>${d.data().points.toLocaleString()}</td><td><button onclick="updateStat('redemptions','${d.id}')">Selesai</button></td></tr>`).join('');
     });
 }
 
@@ -332,15 +372,34 @@ function renderCart() {
 
 document.getElementById("orderFormFinal").onsubmit = async (e) => {
     e.preventDefault();
-    const cust = document.getElementById("ordCustomer").value, hp = document.getElementById("ordHp").value, pay = document.getElementById("ordPayment").value;
+    const cust = document.getElementById("ordCustomer").value;
+    const hp = document.getElementById("ordHp").value;
+    const pay = document.getElementById("ordPayment").value;
     const total = cart.reduce((s, i) => s + i.subtotal, 0);
-    const detail = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
+    const detail = cart.map(i => `- ${i.nama} (${i.qty}x)`).join("%0A");
+
     try {
-        await db.collection("orders").add({ resellerId: currentUser.id, resellerName: currentUser.nama, customerName: cust, customerHp: hp, produk: detail, total, jumlah: cart.reduce((s, i) => s + i.qty, 0), metode: pay, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        closeOrderModal(); window.open(`https://wa.me/62895345452412?text=Pesanan Baru: ${detail} - Total: Rp ${total.toLocaleString('id-ID')}`, '_blank');
+        await db.collection("orders").add({ 
+            resellerId: currentUser.id, 
+            resellerName: currentUser.nama, 
+            customerName: cust, 
+            customerHp: hp, 
+            produk: detail.replace(/%0A/g, ', '), 
+            total, 
+            jumlah: cart.reduce((s, i) => s + i.qty, 0), 
+            metode: pay, 
+            status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+
+// Format Pesan WhatsApp lebih detail
+        const waMsg = `*HALO ADMIN, PESANAN BARU!*%0A%0A*Data Penerima:*%0ANama: ${cust}%0ANo. HP: ${hp}%0A%0A*Detail Pesanan:*%0A${detail}%0A%0A*Metode:* ${pay}%0A*Total:* Rp ${total.toLocaleString('id-ID')}`;
+        
+        closeOrderModal(); 
+        window.open(`https://wa.me/62895345452412?text=${waMsg}`, '_blank');
     } catch(err) { alert(err.message); }
 };
-
+        
 // --- NAVIGATION & UI ---
 function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
