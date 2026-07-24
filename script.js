@@ -263,21 +263,22 @@ function loadAdminData() {
         document.getElementById("admTotal").innerText = "Rp " + t.toLocaleString('id-ID');
         document.getElementById("admPoin").innerText = Math.floor(t/100).toLocaleString('id-ID');
     });
-
+// Returan Masuk (Admin)
     db.collection("returns").onSnapshot(snap => {
         if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
             const r = d.data();
             return `<tr>
-                <td><b>${r.nama || 'Reseller'}</b></td>
+                <td><b>${r.nama || 'User'}</b></td>
                 <td>${r.produk || '-'}</td>
                 <td>${r.alasan || '-'}</td>
                 <td>${r.hp || '-'}</td>
-                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td style="text-align:center">${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="5" style="text-align:center">Kosong</td></tr>';
+        }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada returan</td></tr>';
     });
 
+    // Keluhan Masuk (Admin)
     db.collection("complaints").onSnapshot(snap => {
         if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
@@ -286,9 +287,9 @@ function loadAdminData() {
                 <td><b>${c.nama || 'User'}</b></td>
                 <td>${c.hp || '-'}</td>
                 <td>${c.pesan || '-'}</td>
-                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td style="text-align:center">${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Tidak ada keluhan</td></tr>';
     });
 
 
@@ -529,5 +530,32 @@ function goToStep2() { if(!cart.length) return alert("Pilih produk!"); document.
 function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
 
 document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Updated!"); };
-document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
-document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
+// Pastikan bagian ini menggunakan currentUser.nama
+document.getElementById("resellerReturnForm").onsubmit = async (e) => { 
+    e.preventDefault(); 
+    await db.collection("returns").add({ 
+        resellerId: currentUser.id, 
+        nama: currentUser.nama || "Reseller", // Gunakan fallback jika nama kosong
+        produk: document.getElementById("retProd").value, 
+        alasan: document.getElementById("retReason").value, 
+        hp: document.getElementById("retHp").value, 
+        status: "proses", 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }); 
+    alert("Laporan Retur Dikirim!"); 
+    e.target.reset(); 
+};
+
+document.getElementById("resellerComplaintForm").onsubmit = async (e) => { 
+    e.preventDefault(); 
+    await db.collection("complaints").add({ 
+        resellerId: currentUser.id, 
+        nama: document.getElementById("compNama").value || currentUser.nama, 
+        hp: document.getElementById("compHp").value, 
+        pesan: document.getElementById("compText").value, 
+        status: "proses", 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+    }); 
+    alert("Keluhan Dikirim!"); 
+    e.target.reset(); 
+};
