@@ -97,16 +97,41 @@ document.getElementById("registerForm").onsubmit = async (e) => {
 };
 
 // --- LOGIKA LOGIN (DENGAN PESAN ERROR) ---
+// --- BAGIAN LOGIN ---
 document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
     
     auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+        console.log("Login Berhasil");
+    })
     .catch(err => {
-        alert("Gagal Masuk: Email atau Password salah!\n(" + err.message + ")");
+        alert("Gagal Masuk: Email atau Password salah!");
     });
 };
+
+// --- PENGECEKAN STATUS AKTIF ---
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        const doc = await db.collection("users").doc(user.uid).get();
+        if (doc.exists) {
+            const userData = doc.data();
+            // JIKA BUKAN ADMIN DAN BELUM AKTIF, TENDANG KELUAR
+            if (userData.role !== 'admin' && userData.isActive !== true) {
+                alert("Akun Anda Belum Aktif. Silakan Hubungi Admin.");
+                auth.signOut();
+                return;
+            }
+            currentUser = { id: user.uid, ...userData };
+            initApp();
+        }
+    } else {
+        document.getElementById("appWrapper").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+    }
+});
 
 function resetOrderFilter() {
     document.getElementById("filterStart").value = "";
@@ -170,31 +195,32 @@ function loadResellerData() {
 }
 
 function loadResellerHistory() {
-    db.collection("returns").onSnapshot(snap => {
-    document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-    document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
-        const r = d.data();
-        return `<tr>
-            <td><b>${r.nama}</b></td>
-            <td>${r.produk}</td>
-            <td><small>${r.alasan || '-'}</small></td>
-            <td>${r.hp || '-'}</td>
-            <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
-        </tr>`;
-    }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada returan</td></tr>';
-});
-    db.collection("complaints").onSnapshot(snap => {
-    document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-    document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
-        const c = d.data();
-        return `<tr>
-            <td><b>${c.nama}</b></td>
-            <td>${c.hp || '-'}</td>
-            <td><small>${c.pesan}</small></td>
-            <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
-        </tr>`;
-    }).join('') || '<tr><td colspan="4" style="text-align:center">Tidak ada keluhan</td></tr>';
-});
+    // Tampilkan Retur Milik Saya Sendiri
+    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerReturnHistory").innerHTML = s.docs.map(doc => {
+            const d = doc.data();
+            return `<tr>
+                <td>${d.produk || '-'}</td>
+                <td><small>${d.alasan || '-'}</small></td>
+                <td>${d.hp || '-'}</td>
+                <td style="color:${d.status === 'Selesai' ? 'green' : 'orange'}">${d.status || 'proses'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada retur</td></tr>';
+    });
+
+    // Tampilkan Keluhan Milik Saya Sendiri
+    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
+        document.getElementById("resellerCompHistory").innerHTML = s.docs.map(doc => {
+            const d = doc.data();
+            return `<tr>
+                <td>${d.nama || '-'}</td>
+                <td><small>${d.pesan || '-'}</small></td>
+                <td>${d.hp || '-'}</td>
+                <td style="color:${d.status === 'Selesai' ? 'green' : 'orange'}">${d.status || 'proses'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada keluhan</td></tr>';
+    });
+}
 
 function loadResellerLeaderboard() {
     db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
@@ -241,29 +267,28 @@ function changeRankPage(dir) {
 }
 
 function loadAdminData() {
+    // Badge Notifikasi Aktivasi
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
-        if (!loadActivations) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
-        loadActivations = false;
         if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
     });
 
+    // Tabel Order Admin
     db.collection("orders").onSnapshot(snap => {
-        if (!loadOrders) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
-        loadOrders = false;
-        let q=0, t=0, pending=0;
-        let sorted = snap.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-        document.getElementById("adminOrderTable").innerHTML = sorted.map(d => {
+        let pending = 0;
+        document.getElementById("adminOrderTable").innerHTML = snap.docs.map(d => {
             const o = d.data();
-            if(o.status === 'Selesai') { q++; t += (o.total || 0); }
             if(o.status === 'pending') pending++;
-            return `<tr><td>${o.resellerName}</td><td>${o.customerName}</td><td>${o.produk}</td><td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')" style="background:#F2A93B; border:none; padding:5px 10px; border-radius:5px; color:white; font-weight:bold; cursor:pointer;">Selesai</button>`:'✅'}</td></tr>`;
+            return `<tr>
+                <td>${o.resellerName || 'User'}</td>
+                <td>${o.customerName || '-'}</td>
+                <td>${o.produk || '-'}</td>
+                <td>${o.status==='pending'?`<button onclick="updateStat('orders','${d.id}')">Selesai</button>`:'✅'}</td>
+            </tr>`;
         }).join('');
         document.getElementById("badgeOrder").innerText = pending;
-        document.getElementById("admQty").innerText = q;
-        document.getElementById("admTotal").innerText = "Rp " + t.toLocaleString('id-ID');
-        document.getElementById("admPoin").innerText = Math.floor(t/100).toLocaleString('id-ID');
     });
 
+    // Tabel Retur Admin (5 Kolom)
     db.collection("returns").onSnapshot(snap => {
         if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
@@ -273,11 +298,12 @@ function loadAdminData() {
                 <td>${r.produk || '-'}</td>
                 <td><small>${r.alasan || '-'}</small></td>
                 <td>${r.hp || '-'}</td>
-                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` : '✅'}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="5" style="text-align:center">Kosong</td></tr>';
     });
 
+    // Tabel Keluhan Admin (4 Kolom)
     db.collection("complaints").onSnapshot(snap => {
         if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
@@ -286,11 +312,11 @@ function loadAdminData() {
                 <td><b>${c.nama || 'User'}</b></td>
                 <td>${c.hp || '-'}</td>
                 <td><small>${c.pesan || '-'}</small></td>
-                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px;">Selesai</button>` : '✅'}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
     });
-
+}
 
     db.collection("redemptions").onSnapshot(snap => {
         if (!loadRedeems) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
