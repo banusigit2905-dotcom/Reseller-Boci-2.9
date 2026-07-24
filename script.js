@@ -271,9 +271,9 @@ function loadAdminData() {
             return `<tr>
                 <td><b>${r.nama || 'Reseller'}</b></td>
                 <td>${r.produk || '-'}</td>
-                <td>${r.alasan || '-'}</td>
+                <td><small>${r.alasan || '-'}</small></td>
                 <td>${r.hp || '-'}</td>
-                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="5" style="text-align:center">Kosong</td></tr>';
     });
@@ -285,8 +285,8 @@ function loadAdminData() {
             return `<tr>
                 <td><b>${c.nama || 'User'}</b></td>
                 <td>${c.hp || '-'}</td>
-                <td>${c.pesan || '-'}</td>
-                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+                <td><small>${c.pesan || '-'}</small></td>
+                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
     });
