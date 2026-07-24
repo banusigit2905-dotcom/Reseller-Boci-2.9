@@ -144,7 +144,46 @@
                 <!-- MODAL & SECTION LAINNYA -->
                 <section id="secAdminActivation" class="app-section hidden"><div class="card card-border"><h3>🔑 Aktivasi Akun Baru</h3><div class="table-container"><table><thead><tr><th>ID</th><th>Nama</th><th>Email</th><th>Aksi</th></tr></thead><tbody id="adminActivationTable"></tbody></table></div></div></section>
                 <section id="secAdminRedeem" class="app-section hidden"><div class="card card-border"><h3>🎁 Penukaran Poin Masuk</h3><div class="table-container"><table><thead><tr><th>User</th><th>Poin</th><th>Aksi</th></tr></thead><tbody id="adminRedeemTable"></tbody></table></div></div></section>
-                <section id="secAdminCatalog" class="app-section hidden"><div class="card card-border"><h3>📦 Katalog</h3><div class="table-container"><table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead><tbody id="adminCatalogTable"></tbody></table></div></div></section>
+                <section id="secAdminCatalog" class="app-section hidden">
+    <div class="card card-border">
+        <h3 id="formCatalogTitle">📦 Tambah Produk Baru</h3>
+        <form id="adminProductForm" class="form-styled">
+            <!-- Hidden input untuk menyimpan ID saat mode EDIT -->
+            <input type="hidden" id="adminProdId">
+            
+            <label style="font-size: 11px; font-weight: bold;">Nama Produk</label>
+            <input type="text" id="adminProdName" placeholder="Contoh: Keripik Basreng 100gr" required>
+            
+            <label style="font-size: 11px; font-weight: bold;">Kategori</label>
+            <input type="text" id="adminProdCat" placeholder="Contoh: Basreng" required>
+            
+            <label style="font-size: 11px; font-weight: bold;">Harga (Angka saja)</label>
+            <input type="number" id="adminProdPrice" placeholder="Contoh: 12000" required>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-primary" id="btnSaveProduct" style="flex: 2;">SIMPAN PRODUK</button>
+                <button type="button" onclick="resetProductForm()" class="btn-secondary hidden" id="btnCancelEdit" style="flex: 1;">BATAL</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card card-border">
+        <h3>Daftar Katalog</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminCatalogTable"></tbody>
+            </table>
+        </div>
+    </div>
+                </section>
                 <section id="secProfile" class="app-section hidden"><div class="card card-border"><h3>👤 Profil (<span id="customId">-</span>)</h3><form id="editProfileForm" class="form-styled"><input type="text" id="profEmail" readonly style="background:#eee"><input type="text" id="profNama" required><input type="tel" id="profHp" required><button type="submit" class="btn-primary">UPDATE</button></form></div></section>
                 <!-- Bagian Retur -->
 <section id="secResellerReturn" class="app-section hidden">
