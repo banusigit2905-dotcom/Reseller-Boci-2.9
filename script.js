@@ -321,13 +321,54 @@ function renderCart() {
 
 document.getElementById("orderFormFinal").onsubmit = async (e) => {
     e.preventDefault();
-    const cust = document.getElementById("ordCustomer").value, hp = document.getElementById("ordHp").value, pay = document.getElementById("ordPayment").value;
+    const cust = document.getElementById("ordCustomer").value;
+    const hp = document.getElementById("ordHp").value;
+    const pay = document.getElementById("ordPayment").value;
     const total = cart.reduce((s, i) => s + i.subtotal, 0);
+    
+    // Menyusun detail produk untuk database
     const detail = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
+    
+    // Menyusun detail produk untuk tampilan WhatsApp (pake baris baru)
+    const detailWA = cart.map(i => `- ${i.nama} (${i.qty}x)`).join("%0A");
+
     try {
-        await db.collection("orders").add({ resellerId: currentUser.id, resellerName: currentUser.nama, customerName: cust, customerHp: hp, produk: detail, total, jumlah: cart.reduce((s, i) => s + i.qty, 0), metode: pay, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        closeOrderModal(); window.open(`https://wa.me/62895345452412?text=Pesanan Baru: ${detail} - Total: Rp ${total.toLocaleString('id-ID')}`, '_blank');
-    } catch(err) { alert(err.message); }
+        // Simpan ke Firebase
+        await db.collection("orders").add({ 
+            resellerId: currentUser.id, 
+            resellerName: currentUser.nama, 
+            customerName: cust, 
+            customerHp: hp, 
+            produk: detail, 
+            total, 
+            jumlah: cart.reduce((s, i) => s + i.qty, 0), 
+            metode: pay, 
+            status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+
+        // Format Pesan WhatsApp yang baru
+        const waText = 
+            `*--- PESANAN BARU OKTSHOP17 ---*%0A%0A` +
+            `*Data Penerima:*%0A` +
+            `Nama: ${cust}%0A` +
+            `No. HP: ${hp}%0A` +
+            `Pembayaran: ${pay}%0A%0A` +
+            `*Detail Produk:*%0A` +
+            `${detailWA}%0A%0A` +
+            `*Total Tagihan:* Rp ${total.toLocaleString('id-ID')}%0A%0A` +
+            `----------------------------------%0A` +
+            `*Reseller:* ${currentUser.nama}%0A` +
+            `_Mohon segera diproses ya Admin, Terima kasih!_`;
+
+        closeOrderModal(); 
+        
+        // Membuka WhatsApp
+        window.open(`https://wa.me/62895345452412?text=${waText}`, '_blank');
+        
+    } catch(err) { 
+        alert("Gagal menyimpan pesanan: " + err.message); 
+    }
 };
 
 // --- NAVIGATION & UI ---
