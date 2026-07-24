@@ -363,20 +363,30 @@ document.getElementById("orderFormFinal").onsubmit = async (e) => {
 
 function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
-    let menu = (currentUser.role === 'admin') ? 
-        `<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
-        <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Akun</div>
-        <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
-        <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div>
-        <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
-        <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
-        <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>` :
-        `<div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
-        <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
-        <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>`;
-    nav.innerHTML = menu + `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
-}
+    let menuItems = "";
 
+    if (currentUser.role === 'admin') {
+        menuItems = `
+            <div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+            <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Akun</div>
+            <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
+            <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div>
+            <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
+            <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+            <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>
+        `;
+    } else {
+        menuItems = `
+            <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
+            <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+            <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>
+        `;
+    }
+menuItems += `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
+    
+    nav.innerHTML = menuItems;
+}
+    
 function showSection(id) {
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
