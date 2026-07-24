@@ -24,16 +24,21 @@ let loadOrders = true, loadReturns = true, loadComplaints = true, loadRedeems = 
 // --- LOGIKA AUTH & CEK AKTIVASI ---
 auth.onAuthStateChanged(async (user) => {
     if (user) {
-        const doc = await db.collection("users").doc(user.uid).get();
-        if (doc.exists) {
-            const userData = doc.data();
-            if (userData.role !== 'admin' && userData.isActive !== true) {
-                alert("Akun Anda (" + (userData.customId || 'User') + ") belum aktif.\nSilakan hubungi Admin via WhatsApp untuk aktivasi.");
-                auth.signOut();
-                return;
+        try {
+            const doc = await db.collection("users").doc(user.uid).get();
+            if (doc.exists) {
+                const userData = doc.data();
+                // JIKA RESELLER BELUM AKTIF, KELUARKAN OTOMATIS
+                if (userData.role !== 'admin' && userData.isActive !== true) {
+                    alert("Akun Anda (" + (userData.customId || 'User') + ") belum aktif.\nSilakan hubungi Admin via WhatsApp untuk aktivasi.");
+                    auth.signOut();
+                    return;
+                }
+                currentUser = { id: user.uid, ...userData };
+                initApp();
             }
-            currentUser = { id: user.uid, ...userData };
-            initApp();
+        } catch (err) {
+            console.error("Error checking user doc:", err);
         }
     } else {
         document.getElementById("appWrapper").classList.add("hidden");
@@ -91,7 +96,18 @@ document.getElementById("registerForm").onsubmit = async (e) => {
     } catch (err) { alert("Gagal Daftar: " + err.message); }
 };
 
-// --- LOGIKA FILTER & RESET ---
+// --- LOGIKA LOGIN (DENGAN PESAN ERROR) ---
+document.getElementById("loginForm").onsubmit = (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value;
+    const pass = document.getElementById("loginPassword").value;
+    
+    auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => {
+        alert("Gagal Masuk: Email atau Password salah!\n(" + err.message + ")");
+    });
+};
+
 function resetOrderFilter() {
     document.getElementById("filterStart").value = "";
     document.getElementById("filterEnd").value = "";
@@ -105,17 +121,18 @@ function loadResellerData() {
     db.collection("orders").where("resellerId", "==", currentUser.id).onSnapshot(sOrders => {
         db.collection("redemptions").where("resellerId", "==", currentUser.id).where("status", "==", "Selesai").onSnapshot(sRedeems => {
             let q = 0, t = 0;
-            let allDocs = sOrders.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-
+            let allDocs = sOrders.docs.sort((a, b) => {
+                const dateA = a.data().createdAt?.seconds || 0;
+                const dateB = b.data().createdAt?.seconds || 0;
+                return dateB - dateA;
+            });
             allDocs.forEach(d => {
                 const o = d.data();
                 if(o.status === 'Selesai') { q += (o.jumlah || 0); t += (o.total || 0); }
             });
-
             let usedPoints = 0;
             sRedeems.docs.forEach(d => { usedPoints += (d.data().points || 0); });
             currentPointsVal = Math.floor(t / 100) - usedPoints;
-
             document.getElementById("resQty").innerText = q.toLocaleString('id-ID');
             document.getElementById("resTotal").innerText = "Rp " + t.toLocaleString('id-ID');
             document.getElementById("resPoin").innerText = currentPointsVal.toLocaleString('id-ID');
@@ -123,7 +140,6 @@ function loadResellerData() {
 
             let filteredDocs = [];
             let emptyMsg = "Tidak ada order hari ini";
-
             if (startDate && endDate) {
                 const startRange = new Date(startDate).setHours(0, 0, 0, 0);
                 const endRange = new Date(endDate).setHours(23, 59, 59, 999);
@@ -140,32 +156,32 @@ function loadResellerData() {
                     return created >= todayStart && created <= todayEnd;
                 });
             }
-
             const tableBody = document.getElementById("resellerOrderTable");
-            tableBody.innerHTML = filteredDocs.length > 0 ? filteredDocs.map(d => {
-                const o = d.data();
-                return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td></tr>`;
-            }).join('') : `<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">${emptyMsg}</td></tr>`;
+            if (filteredDocs.length > 0) {
+                tableBody.innerHTML = filteredDocs.map(d => {
+                    const o = d.data();
+                    return `<tr><td>${o.customerName}</td><td>${o.produk}</td><td>Rp ${o.total.toLocaleString('id-ID')}</td><td><span style="color:${o.status==='Selesai'?'green':'orange'}; font-weight:800;">${o.status}</span></td></tr>`;
+                }).join('');
+            } else {
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">${emptyMsg}</td></tr>`;
+            }
         });
     });
 }
 
 function loadResellerHistory() {
-    // History Retur (4 Kolom)
     db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
         let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
         document.getElementById("resellerReturnHistory").innerHTML = sorted.map(doc => {
             const d = doc.data();
-            return `<tr><td>${d.produk}</td><td><small>${d.alasan}</small></td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat retur</td></tr>';
     });
-
-    // History Keluhan (4 Kolom)
     db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
         let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
         document.getElementById("resellerCompHistory").innerHTML = sorted.map(doc => {
             const d = doc.data();
-            return `<tr><td>${d.nama}</td><td><small>${d.pesan}</small></td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
+            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat keluhan</td></tr>';
     });
 }
@@ -183,12 +199,16 @@ function loadResellerLeaderboard() {
     });
 }
 
+// PERBAIKAN FUNGSI RANK TABLE
 function renderRankTable() {
     const startIdx = currentRankPage * 10;
     const endIdx = startIdx + 10;
     const pageData = allRankings.slice(startIdx, endIdx);
 
-    document.getElementById("resellerLeaderboardTable").innerHTML = pageData.map((res, i) => `
+    const table = document.getElementById("resellerLeaderboardTable");
+    if(!table) return;
+
+    table.innerHTML = pageData.map((res, i) => `
         <tr>
             <td style="text-align: center;">${startIdx + i + 1}</td>
             <td style="text-align: left;">${res.nama}</td>
@@ -273,8 +293,8 @@ function loadActivationList() {
     });
 }
 
-async function activateUser(uid) { if(confirm("Aktifkan?")) await db.collection("users").doc(uid).update({ isActive: true }); }
-async function updateStat(coll, id) { if(confirm("Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
+async function activateUser(uid) { if(confirm("Aktifkan user ini?")) await db.collection("users").doc(uid).update({ isActive: true }); }
+async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 
 function syncCatalog() {
     db.collection("products").onSnapshot(s => {
@@ -285,6 +305,9 @@ function syncCatalog() {
             cs.innerHTML = '<option value="Semua">Semua</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
         }
         filterProductsByCategory();
+        if (currentUser && currentUser.role === 'admin') {
+            document.getElementById("adminCatalogTable").innerHTML = catalog.map(p => `<tr><td><b>${p.nama}</b></td><td>${p.kategori}</td><td>Rp ${p.harga.toLocaleString('id-ID')}</td><td><button onclick="db.collection('products').doc('${p.id}').delete()">Hapus</button></td></tr>`).join('');
+        }
     });
 }
 
@@ -305,29 +328,52 @@ function addToCart() {
 
 function renderCart() {
     const tb = document.getElementById("cartTableBody"); let t = 0;
-    tb.innerHTML = cart.map((item, index) => { t += item.subtotal; return `<tr><td>${item.nama} (${item.qty}x)</td><td>Rp ${item.subtotal.toLocaleString('id-ID')}</td><td onclick="cart.splice(${index},1);renderCart()" style="color:red; cursor:pointer;">X</td></tr>`; }).join('');
+    tb.innerHTML = cart.map((item, index) => { t += item.subtotal; return `<tr><td>${item.nama} (${item.qty}x)</td><td>Rp ${item.subtotal.toLocaleString('id-ID')}</td><td onclick="cart.splice(${index},1);renderCart()" style="color:red; cursor:pointer; font-weight:800;">X</td></tr>`; }).join('');
     document.getElementById("cartTotalText").innerText = "Total: Rp " + t.toLocaleString('id-ID');
 }
 
 document.getElementById("orderFormFinal").onsubmit = async (e) => {
     e.preventDefault();
-    const cust = document.getElementById("ordCustomer").value, hp = document.getElementById("ordHp").value, pay = document.getElementById("ordPayment").value;
+    const cust = document.getElementById("ordCustomer").value;
+    const hp = document.getElementById("ordHp").value;
+    const pay = document.getElementById("ordPayment").value;
     const total = cart.reduce((s, i) => s + i.subtotal, 0);
     const detail = cart.map(i => `${i.nama} (${i.qty}x)`).join(", ");
     const detailWA = cart.map(i => `- ${i.nama} (${i.qty}x)`).join("%0A");
 
     try {
-        await db.collection("orders").add({ resellerId: currentUser.id, resellerName: currentUser.nama, customerName: cust, customerHp: hp, produk: detail, total, jumlah: cart.reduce((s, i) => s + i.qty, 0), metode: pay, status: "pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        const waText = `*--- PESANAN BARU ---*%0ANama: ${cust}%0AHP: ${hp}%0APembayaran: ${pay}%0A%0A*Detail:*%0A${detailWA}%0A%0ATotal: Rp ${total.toLocaleString('id-ID')}`;
-        closeOrderModal(); window.open(`https://wa.me/62895345452412?text=${waText}`, '_blank');
-    } catch(err) { alert(err.message); }
+        await db.collection("orders").add({ 
+            resellerId: currentUser.id, 
+            resellerName: currentUser.nama, 
+            customerName: cust, 
+            customerHp: hp, 
+            produk: detail, 
+            total, 
+            jumlah: cart.reduce((s, i) => s + i.qty, 0), 
+            metode: pay, 
+            status: "pending", 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+        });
+
+        const waText = `*--- PESANAN BARU OKTSHOP17 ---*%0A%0A*Data Penerima:*%0ANama: ${cust}%0ANo. HP: ${hp}%0APembayaran: ${pay}%0A%0A*Detail Produk:*%0A${detailWA}%0A%0A*Total Tagihan:* Rp ${total.toLocaleString('id-ID')}%0A%0A----------------------------------%0A*Reseller:* ${currentUser.nama}`;
+        closeOrderModal(); 
+        window.open(`https://wa.me/62895345452412?text=${waText}`, '_blank');
+    } catch(err) { alert("Gagal menyimpan pesanan: " + err.message); }
 };
 
 function renderSidebar() {
     const nav = document.getElementById("sidebarNav");
     let menu = (currentUser.role === 'admin') ? 
-        `<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div><div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Akun</div><div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div><div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>` :
-        `<div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div><div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div><div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>`;
+        `<div class="nav-item" onclick="showSection('secAdminDashboard')">📊 Dashboard Admin</div>
+        <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Akun</div>
+        <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
+        <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Update Katalog</div>
+        <div class="nav-item" onclick="showSection('secAdminRankings')">🏆 Peringkat Reseller</div>
+        <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+        <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>` :
+        `<div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
+        <div class="nav-item" onclick="showSection('secResellerReturn')">📦 Retur Barang</div>
+        <div class="nav-item" onclick="showSection('secResellerComplaint')">📢 Laporan Keluhan</div>`;
     nav.innerHTML = menu + `<div class="nav-item" onclick="showSection('secProfile')">👤 Profil Akun</div>`;
 }
 
@@ -335,16 +381,31 @@ function showSection(id) {
     document.querySelectorAll('.app-section').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
     if(id === 'secAdminActivation') loadActivationList();
+    if(id === 'secAdminRankings') loadRankings();
     toggleSidebar(false);
 }
 
-document.getElementById("loginForm").onsubmit = (e) => { 
-    e.preventDefault(); 
-    auth.signInWithEmailAndPassword(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value)
-    .catch(err => alert("Login Gagal: " + err.message));
+async function loadRankings() {
+    const us = await db.collection("users").where("role", "==", "reseller").get();
+    const os = await db.collection("orders").where("status", "==", "Selesai").get();
+    const all = os.docs.map(d => d.data());
+    let ranks = us.docs.map(u => {
+        const total = all.filter(o => o.resellerId === u.id).reduce((s, o) => s + (o.total || 0), 0);
+        return { nama: u.data().nama, total, poin: Math.floor(total / 100) };
+    }).sort((a, b) => b.total - a.total);
+    document.getElementById("adminRankTable").innerHTML = ranks.map((r, i) => `<tr><td>${i+1}</td><td>${r.nama}</td><td>${r.poin}</td><td>Rp ${r.total.toLocaleString('id-ID')}</td></tr>`).join('');
+}
+
+function openRedeemModal() { document.getElementById("redeemModal").classList.remove("hidden"); goToRedeemStep1(); }
+function closeRedeemModal() { document.getElementById("redeemModal").classList.add("hidden"); }
+function goToRedeemStep1() { document.getElementById("redeemStep1").classList.remove("hidden"); document.getElementById("redeemStep2").classList.add("hidden"); }
+function goToRedeemStep2() { if(currentPointsVal < document.getElementById("redeemAmountSelect").value) return alert("Poin Kurang!"); document.getElementById("redeemStep1").classList.add("hidden"); document.getElementById("redeemStep2").classList.remove("hidden"); }
+
+document.getElementById("formRedeemPoints").onsubmit = async (e) => {
+    e.preventDefault(); await db.collection("redemptions").add({ resellerId: currentUser.id, resellerName: currentUser.nama, points: parseInt(document.getElementById("redeemAmountSelect").value), status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert("Berhasil!"); closeRedeemModal();
 };
 
-// Fungsi pendukung UI lainnya tetap sama...
 function logout() { auth.signOut(); }
 function toggleSidebar(f) { document.getElementById("sidebar").classList.toggle("active", f); document.getElementById("sidebarOverlay").classList.toggle("active", f); }
 function switchAuth(m) {
@@ -355,5 +416,7 @@ function openOrderModal() { document.getElementById("orderModal").classList.remo
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
 function goToStep2() { if(!cart.length) return alert("Pilih produk!"); document.getElementById("orderStep1").classList.add("hidden"); document.getElementById("orderStep2").classList.remove("hidden"); }
 function goToStep1() { document.getElementById("orderStep1").classList.remove("hidden"); document.getElementById("orderStep2").classList.add("hidden"); }
-function openRedeemModal() { document.getElementById("redeemModal").classList.remove("hidden"); }
-function closeRedeemModal() { document.getElementById("redeemModal").classList.add("hidden"); }
+
+document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("users").doc(currentUser.id).update({ nama: document.getElementById("profNama").value, hp: document.getElementById("profHp").value }); alert("Updated!"); };
+document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
+document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
