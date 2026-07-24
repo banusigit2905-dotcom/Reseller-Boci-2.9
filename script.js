@@ -202,8 +202,19 @@ function renderRankTable() {
     const startIdx = currentRankPage * 10;
     const endIdx = startIdx + 10;
     const pageData = allRankings.slice(startIdx, endIdx);
-    document.getElementById("resellerLeaderboardTable").innerHTML = pageData.map((res, i) => `<tr><td>${startIdx + i + 1}</td><td>${res.nama}</td><td>${res.poin.toLocaleString('id-ID')} Poin</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center">Memuat...</td></tr>';
-    if(document.getElementById("rankPageInfo")) {
+
+    document.getElementById("resellerLeaderboardTable").innerHTML = pageData.map((res, i) => `
+        <tr>
+            <td style="text-align: center;">${startIdx + i + 1}</td>
+            <td style="text-align: left;">${res.nama}</td>
+            <td style="text-align: right; padding-right: 20px; font-weight: bold;">
+                ${res.poin.toLocaleString('id-ID')} Poin
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="3" style="text-align:center">Memuat...</td></tr>';
+    
+    // ... sisa kode pagination ...
+}    if(document.getElementById("rankPageInfo")) {
         document.getElementById("rankPageInfo").innerText = `Rangking ${startIdx + 1} - ${Math.min(endIdx, 50, allRankings.length)}`;
     }
     if(document.getElementById("prevRank")) document.getElementById("prevRank").disabled = (currentRankPage === 0);
