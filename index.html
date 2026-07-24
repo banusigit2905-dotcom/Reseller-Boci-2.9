@@ -156,14 +156,23 @@
             <button type="submit" class="btn-primary">KIRIM LAPORAN RETUR</button>
         </form>
     </div>
-    <div class="card card-border">
-        <h3>Riwayat Retur Anda</h3>
-        <div class="table-container">
-            <table>
-                <tbody id="resellerReturnHistory"></tbody>
-            </table>
-        </div>
+    <!-- Cari tabel di dalam secResellerReturn -->
+<div class="card card-border">
+    <h3>Riwayat Retur Anda</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produk</th>
+                    <th>Alasan</th>
+                    <th>Nomor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="resellerReturnHistory"></tbody>
+        </table>
     </div>
+</div>
 </section>
                 <!-- Bagian Keluhan -->
 <section id="secResellerComplaint" class="app-section hidden">
@@ -184,14 +193,23 @@
             <button type="submit" class="btn-primary">KIRIM KELUHAN</button>
         </form>
     </div>
-    <div class="card card-border">
-        <h3>Riwayat Keluhan Anda</h3>
-        <div class="table-container">
-            <table>
-                <tbody id="resellerCompHistory"></tbody>
-            </table>
-        </div>
+    <!-- Cari tabel di dalam secResellerComplaint -->
+<div class="card card-border">
+    <h3>Riwayat Keluhan Anda</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Isi Keluhan</th>
+                    <th>Nomor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="resellerCompHistory"></tbody>
+        </table>
     </div>
+</div>
 </section>
                 <section id="secAdminRankings" class="app-section hidden"><div class="card card-border"><h3>🏆 Peringkat</h3><div class="table-container"><table><thead><tr><th>No</th><th>Nama</th><th>Poin</th><th>Total</th></tr></thead><tbody id="adminRankTable"></tbody></table></div></div></section>
                 <section id="secAdminReturn" class="app-section hidden"><div class="card card-border"><h3>📥 Returan</h3><div class="table-container"><table><tbody id="adminReturnTable"></tbody></table></div></div></section>
