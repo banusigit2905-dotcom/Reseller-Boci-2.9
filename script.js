@@ -296,17 +296,100 @@ function loadActivationList() {
 async function activateUser(uid) { if(confirm("Aktifkan user ini?")) await db.collection("users").doc(uid).update({ isActive: true }); }
 async function updateStat(coll, id) { if(confirm("Tandai Selesai?")) await db.collection(coll).doc(id).update({ status: "Selesai" }); }
 
+// --- LOGIKA FORM KATALOG (TAMBAH & EDIT) ---
+
+// Fungsi untuk Reset Form ke mode Tambah
+function resetProductForm() {
+    document.getElementById("adminProdId").value = "";
+    document.getElementById("adminProdName").value = "";
+    document.getElementById("adminProdCat").value = "";
+    document.getElementById("adminProdPrice").value = "";
+    document.getElementById("formCatalogTitle").innerText = "📦 Tambah Produk Baru";
+    document.getElementById("btnSaveProduct").innerText = "SIMPAN PRODUK";
+    document.getElementById("btnCancelEdit").classList.add("hidden");
+}
+
+// Handle Simpan (Tambah atau Update)
+document.getElementById("adminProductForm").onsubmit = async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById("adminProdId").value;
+    const nama = document.getElementById("adminProdName").value;
+    const kategori = document.getElementById("adminProdCat").value;
+    const harga = parseInt(document.getElementById("adminProdPrice").value);
+
+    const productData = {
+        nama: nama,
+        kategori: kategori,
+        harga: harga,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        if (id) {
+            // Jika ID ada, maka MODE EDIT
+            await db.collection("products").doc(id).update(productData);
+            alert("Produk berhasil diperbarui!");
+        } else {
+            // Jika ID kosong, maka MODE TAMBAH BARU
+            await db.collection("products").add({
+                ...productData,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert("Produk berhasil ditambahkan!");
+        }
+        resetProductForm();
+    } catch (error) {
+        alert("Gagal menyimpan: " + error.message);
+    }
+};
+
+// Fungsi Edit: Mengisi data tabel ke dalam form
+function editProduct(id) {
+    const p = catalog.find(item => item.id === id);
+    if (p) {
+        document.getElementById("adminProdId").value = p.id;
+        document.getElementById("adminProdName").value = p.nama;
+        document.getElementById("adminProdCat").value = p.kategori;
+        document.getElementById("adminProdPrice").value = p.harga;
+        
+        document.getElementById("formCatalogTitle").innerText = "📝 Edit Produk";
+        document.getElementById("btnSaveProduct").innerText = "UPDATE PRODUK";
+        document.getElementById("btnCancelEdit").classList.remove("hidden");
+        
+        // Scroll otomatis ke atas (ke arah form)
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+// Update fungsi syncCatalog agar menampilkan tombol Edit
 function syncCatalog() {
-    db.collection("products").onSnapshot(s => {
+    db.collection("products").orderBy("kategori").onSnapshot(s => {
         catalog = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Update Select Option di modal order reseller
         const cs = document.getElementById("ordCatSelect");
         if(cs) {
             const cats = [...new Set(catalog.map(p => p.kategori || "Umum"))];
             cs.innerHTML = '<option value="Semua">Semua</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
         }
         filterProductsByCategory();
+
+        // Tampilkan di tabel admin dengan tombol Edit & Hapus
         if (currentUser && currentUser.role === 'admin') {
-            document.getElementById("adminCatalogTable").innerHTML = catalog.map(p => `<tr><td><b>${p.nama}</b></td><td>${p.kategori}</td><td>Rp ${p.harga.toLocaleString('id-ID')}</td><td><button onclick="db.collection('products').doc('${p.id}').delete()">Hapus</button></td></tr>`).join('');
+            document.getElementById("adminCatalogTable").innerHTML = catalog.map(p => `
+                <tr>
+                    <td><b>${p.nama}</b></td>
+                    <td>${p.kategori}</td>
+                    <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="editProduct('${p.id}')" style="background:#2196F3; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Edit</button>
+                            <button onclick="if(confirm('Hapus produk ini?')) db.collection('products').doc('${p.id}').delete()" style="background:#f44336; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
         }
     });
 }
