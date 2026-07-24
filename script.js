@@ -265,24 +265,32 @@ function loadAdminData() {
     });
 
     db.collection("returns").onSnapshot(snap => {
-        if (!loadReturns) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
-        loadReturns = false;
-        document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
             const r = d.data();
-            return `<tr><td><b>${r.nama}</b></td><td>${r.produk}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
+            return `<tr>
+                <td><b>${r.nama || 'Reseller'}</b></td>
+                <td>${r.produk || '-'}</td>
+                <td>${r.alasan || '-'}</td>
+                <td>${r.hp || '-'}</td>
+                <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center">Kosong</td></tr>';
     });
 
     db.collection("complaints").onSnapshot(snap => {
-        if (!loadComplaints) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
-        loadComplaints = false;
-        document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+        if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
             const c = d.data();
-            return `<tr><td><b>${c.nama}</b></td><td>${c.pesan}</td><td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
+            return `<tr>
+                <td><b>${c.nama || 'User'}</b></td>
+                <td>${c.hp || '-'}</td>
+                <td>${c.pesan || '-'}</td>
+                <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center">Kosong</td></tr>';
     });
+
 
     db.collection("redemptions").onSnapshot(snap => {
         if (!loadRedeems) snap.docChanges().forEach(c => { if(c.type === "added") ping.play().catch(e=>{}); });
