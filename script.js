@@ -267,16 +267,16 @@ function loadAdminData() {
     db.collection("returns").onSnapshot(snap => {
         if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
         document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr>
-                <td><b>${r.nama || 'User'}</b></td>
-                <td>${r.produk || '-'}</td>
-                <td>${r.alasan || '-'}</td>
-                <td>${r.hp || '-'}</td>
-                <td style="text-align:center">${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada returan</td></tr>';
-    });
+        const r = d.data();
+        return `<tr>
+            <td><b>${r.nama || 'User'}</b></td>
+            <td>${r.produk || '-'}</td>
+            <td>${r.alasan || '-'}</td>
+            <td>${r.hp || '-'}</td>
+            <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('');
+});
 
     // Keluhan Masuk (Admin)
     db.collection("complaints").onSnapshot(snap => {
