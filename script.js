@@ -170,21 +170,31 @@ function loadResellerData() {
 }
 
 function loadResellerHistory() {
-    db.collection("returns").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-        document.getElementById("resellerReturnHistory").innerHTML = sorted.map(doc => {
-            const d = doc.data();
-            return `<tr><td><b>${d.produk}</b><br><small>${d.alasan}</small></td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat retur</td></tr>';
-    });
-    db.collection("complaints").where("resellerId", "==", currentUser.id).onSnapshot(s => {
-        let sorted = s.docs.sort((a, b) => (b.data().createdAt?.seconds || 0) - (a.data().createdAt?.seconds || 0));
-        document.getElementById("resellerCompHistory").innerHTML = sorted.map(doc => {
-            const d = doc.data();
-            return `<tr><td>${d.pesan}</td><td>${d.nama}</td><td>${d.hp}</td><td style="color:${d.status==='Selesai'?'green':'orange'}">${d.status || 'proses'}</td></tr>`;
-        }).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada riwayat keluhan</td></tr>';
-    });
-}
+    db.collection("returns").onSnapshot(snap => {
+    document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+    document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        return `<tr>
+            <td><b>${r.nama}</b></td>
+            <td>${r.produk}</td>
+            <td><small>${r.alasan || '-'}</small></td>
+            <td>${r.hp || '-'}</td>
+            <td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')" style="background:#F2A93B; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center">Tidak ada returan</td></tr>';
+});
+    db.collection("complaints").onSnapshot(snap => {
+    document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
+    document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+        const c = d.data();
+        return `<tr>
+            <td><b>${c.nama}</b></td>
+            <td>${c.hp || '-'}</td>
+            <td><small>${c.pesan}</small></td>
+            <td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')" style="background:#F2A93B; border:none; padding:5px 8px; border-radius:4px; color:white; cursor:pointer;">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center">Tidak ada keluhan</td></tr>';
+});
 
 function loadResellerLeaderboard() {
     db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
