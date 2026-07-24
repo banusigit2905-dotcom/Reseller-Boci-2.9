@@ -104,13 +104,22 @@
                     </div>
 
                     <div class="card card-border">
-                        <h3>🏆 Top Peringkat Reseller</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>No</th><th>Nama Reseller</th><th>Poin</th></tr></thead>
-                                <tbody id="resellerLeaderboardTable"></tbody>
-                            </table>
-                        </div>
+    <h3>🏆 Top Peringkat Reseller</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <!-- No dibuat center -->
+                    <th style="text-align: center; width: 50px;">No</th> 
+                    <!-- Nama dibuat kiri -->
+                    <th style="text-align: left;">Nama Reseller</th>
+                    <!-- Poin dibuat kanan agar rapi -->
+                    <th style="text-align: right; padding-right: 20px;">Poin</th>
+                </tr>
+            </thead>
+            <tbody id="resellerLeaderboardTable"></tbody>
+        </table>
+    </div>
                         <div class="pagination-container">
                             <button class="btn-nav" id="prevRank" onclick="changeRankPage(-1)"> < </button>
                             <span class="page-info" id="rankPageInfo">Rangking 1 - 10</span>
