@@ -473,5 +473,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
+    <!-- MODAL DETAIL PESAN -->
+<div id="messageModal" class="hidden modal-overlay">
+    <div class="modal-box">
+        <h3 id="msgModalTitle">Judul Pesan</h3>
+        <p id="msgModalTime" style="font-size: 10px; color: #999; margin-bottom: 10px;"></p>
+        <div id="msgModalBody" style="margin-bottom: 20px; line-height: 1.5; color: #333;"></div>
+        <button onclick="closeMessageModal()" class="btn-primary">TUTUP</button>
+    </div>
+</div>
 </body>
 </html>
