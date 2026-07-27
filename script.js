@@ -545,8 +545,21 @@ document.getElementById("formRedeemPoints").onsubmit = async (e) => {
 };
 
 // --- 11. ADMIN ACTIONS ---
-async function activateUser(uid) { if(confirm("Aktifkan?")) await db.collection("users").doc(uid).update({ isActive: true }); }
-
+async function activateUser(uid) {
+    if(confirm("Aktifkan?")) {
+        await db.collection("users").doc(uid).update({ isActive: true });
+        
+        // KIRIM PESAN AKTIVASI
+        const skrg = new Date().toLocaleString('id-ID');
+        await db.collection("notifications").add({
+            userId: uid,
+            title: "🎉 Akun Telah Aktif",
+            text: `Akun kamu telah aktif, ${skrg}. Selamat bergabung di OKTSHOP17!`,
+            isRead: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+}
 async function updateStat(coll, id) {
     if (!confirm("Tandai Selesai?")) return;
     try {
