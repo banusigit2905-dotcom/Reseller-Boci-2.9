@@ -18,32 +18,37 @@
 
     <div id="loginScreen">
         <div class="login-container">
-            <h2 class="auth-title">OKTSHOP17</h2>
-            <div class="auth-tabs">
-                <button onclick="switchAuth('login')" id="tLog" class="tab-btn active">MASUK</button>
-                <button onclick="switchAuth('register')" id="tReg" class="tab-btn">DAFTAR</button>
-            </div>
-            <form id="loginForm">
-    <div class="input-group">
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+    <h2 class="auth-title">OKTSHOP17</h2>
+    <div class="auth-tabs">
+        <button onclick="switchAuth('login')" id="tLog" class="tab-btn active">MASUK</button>
+        <button onclick="switchAuth('register')" id="tReg" class="tab-btn">DAFTAR</button>
     </div>
-    
-    <!-- Tombol Masuk di Atas -->
-    <button type="submit" class="btn-primary">MASUK</button>
 
-    <!-- Tombol Lupa Password di Bawah Tombol Masuk -->
-    <div style="text-align: center; margin-top: 15px;">
-        <button type="button" onclick="handleResetPassword()" class="btn-link-reset">
-            Lupa Password? Reset di sini
-        </button>
-    </div>
-</form>
-                <button type="submit" class="btn-primary">DAFTAR & AKTIVASI</button>
-            </form>
+    <!-- FORM LOGIN -->
+    <form id="loginForm">
+        <div class="input-group">
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
         </div>
-    </div>
+        <button type="submit" class="btn-primary">MASUK</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <button type="button" onclick="handleResetPassword()" class="btn-link-reset">
+                Lupa Password? Reset di sini
+            </button>
+        </div>
+    </form>
 
+    <!-- FORM DAFTAR (Awalnya tersembunyi) -->
+    <form id="registerForm" class="hidden">
+        <div class="input-group">
+            <input type="text" id="regNama" placeholder="Nama Lengkap" required>
+            <input type="email" id="regEmail" placeholder="Email" required>
+            <input type="password" id="regPassword" placeholder="Kata Sandi (Min. 6 Karakter)" required>
+            <input type="tel" id="regHp" placeholder="No. WhatsApp (Contoh: 0812...)" required>
+        </div>
+        <button type="submit" class="btn-primary">DAFTAR & AKTIVASI</button>
+    </form>
+</div>
     <div id="appWrapper" class="hidden">
         <main id="mainContent">
             <header class="top-nav">
