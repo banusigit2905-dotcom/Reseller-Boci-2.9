@@ -335,6 +335,17 @@ td small {
     filter: brightness(0.9);
     transform: scale(1.05);
 }
-<div style="text-align: center; margin-bottom: 10px;">
-    <button type="button" onclick="handleResetPassword()" class="btn-reset-pw">Lupa Password / Reset</button>
-</div>
+.btn-link-reset {
+    background: none;
+    border: none;
+    color: #C62828; /* Warna merah sesuai tema */
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline; /* Memberi garis bawah agar terlihat seperti link */
+    padding: 5px;
+}
+
+.btn-link-reset:hover {
+    color: #f2a93b; /* Berubah jadi warna emas saat disentuh */
+}
