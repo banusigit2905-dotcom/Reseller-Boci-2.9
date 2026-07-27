@@ -1,3 +1,10 @@
+// --- LOGIKA SUARA ADMIN ---
+const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+let lastAdminCounts = { redeem: -1, activation: -1, order: -1, return: -1, complaint: -1 };
+
+function playAdminTing() {
+    notifSound.play().catch(e => console.log("Interaksi user diperlukan untuk suara"));
+}
 // --- UTILS ---
 function generateOrderId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
