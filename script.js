@@ -114,41 +114,45 @@ function loadNotifications() {
       .onSnapshot(snap => {
         const tableBody = document.getElementById("inboxTableBody");
         const badgeInbox = document.getElementById("badgeInbox");
-        const badgeSidebar = document.getElementById("badgeSidebar");
         
         let unreadCount = 0;
         let html = "";
 
         if (snap.empty) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Tidak ada pesan masuk.</td></tr>';
-            if(badgeInbox) badgeInbox.style.display = "none";
-            if(badgeSidebar) badgeSidebar.style.display = "none";
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Kosong</td></tr>';
             return;
         }
 
         snap.forEach((doc, index) => {
             const n = doc.data();
+            const id = doc.id;
             if (!n.isRead) unreadCount++;
             
-            // Format waktu
-            const waktu = n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : 'Baru saja';
+            const waktu = n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID') : 'Baru saja';
             
-            // Beri warna background berbeda jika belum dibaca
-            const rowStyle = n.isRead ? "" : "background-color: #fff9e6; font-weight: bold;";
-            const statusText = n.isRead ? "<span style='color:gray;'>Dibaca</span>" : "<span style='color:orange;'>Baru</span>";
+            // Logika Tebal/Normal
+            const weight = n.isRead ? "normal" : "800"; 
+            const color = n.isRead ? "#666" : "#000";
 
             html += `
-                <tr style="${rowStyle}">
+                <tr onclick="openMessage('${id}', '${n.title}', '${n.text}', '${waktu}')" 
+                    style="cursor:pointer; font-weight:${weight}; color:${color}; ${n.isRead ? '' : 'background:#fff9e6;'}">
                     <td>${index + 1}</td>
                     <td><small>${waktu}</small></td>
                     <td>${n.title}</td>
-                    <td style="text-align: left;">${n.text}</td>
-                    <td>${statusText}</td>
+                    <td style="text-align: left;">${n.text.substring(0, 30)}...</td>
+                    <td>${n.isRead ? 'Dilihat' : '<b>Baru</b>'}</td>
                 </tr>
             `;
         });
 
         tableBody.innerHTML = html;
+        if(badgeInbox) {
+            badgeInbox.innerText = unreadCount;
+            badgeInbox.style.display = unreadCount > 0 ? "block" : "none";
+        }
+    });
+}
         
         // Update Badge di Header & Sidebar
         if(unreadCount > 0) {
@@ -581,10 +585,14 @@ async function updateStat(coll, id) {
         }
 
         if (notifTitle !== "" && targetUser) {
-            await db.collection("notifications").add({
-                userId: targetUser, title: notifTitle, text: notifText, isRead: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            // Tambahkan ini sebelum alert "Berhasil!" di pengajuan redeem
+await db.collection("notifications").add({
+    userId: currentUser.id,
+    title: "⏳ Pengajuan Tukar Poin",
+    text: `Pengajuan tukar poin sebesar ${amt.toLocaleString()} poin sedang diproses. Mohon tunggu konfirmasi admin.`,
+    isRead: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
         }
         alert("Berhasil diperbarui & Notifikasi dikirim!");
     } catch (err) { alert("Gagal memperbarui status."); }
@@ -663,7 +671,20 @@ function loadActivationList() {
         }).join('');
     });
 }
+// Fungsi untuk membuka detail pesan
+async function openMessage(id, title, text, time) {
+    document.getElementById("msgModalTitle").innerText = title;
+    document.getElementById("msgModalBody").innerText = text;
+    document.getElementById("msgModalTime").innerText = time;
+    document.getElementById("messageModal").classList.remove("hidden");
 
+    // Tandai sebagai dibaca di database agar tidak tebal lagi
+    await db.collection("notifications").doc(id).update({ isRead: true });
+}
+
+function closeMessageModal() {
+    document.getElementById("messageModal").classList.add("hidden");
+}
 async function loadRankings() {
     const table = document.getElementById("adminRankTable");
     if (!table) return;
