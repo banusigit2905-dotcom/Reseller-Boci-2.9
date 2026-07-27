@@ -267,7 +267,53 @@ function resetOrderFilter() {
 function loadAdminData() {
     const startDate = document.getElementById("filterAdminStart")?.value;
     const endDate = document.getElementById("filterAdminEnd")?.value;
+// --- DI DALAM loadAdminData() ---
 
+// 1. Tambahkan pengecekan suara di setiap listener (Order, Redeem, Aktivasi, dll)
+// Contoh pada Order:
+db.collection("orders").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'pending').length;
+    if (lastAdminCounts.order !== -1 && pending > lastAdminCounts.order) playAdminTing();
+    lastAdminCounts.order = pending;
+    // ... sisa kode render tabel order
+});
+
+// 2. Listener Tabel Retur (BARU)
+db.collection("returns").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'proses').length;
+    if (lastAdminCounts.return !== -1 && pending > lastAdminCounts.return) playAdminTing();
+    lastAdminCounts.return = pending;
+
+    document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        return `<tr>
+            <td>${r.nama}</td>
+            <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
+            <td>${r.produk}</td>
+            <td>${r.alasan}</td>
+            <td>${r.hp}</td>
+            <td>${r.status === 'proses' ? `<button class="btn-adm-action" onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('');
+});
+
+// 3. Listener Tabel Keluhan (BARU)
+db.collection("complaints").onSnapshot(snap => {
+    const pending = snap.docs.filter(d => d.data().status === 'proses').length;
+    if (lastAdminCounts.complaint !== -1 && pending > lastAdminCounts.complaint) playAdminTing();
+    lastAdminCounts.complaint = pending;
+
+    document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
+        const c = d.data();
+        return `<tr>
+            <td>${c.nama}</td>
+            <td><b>${d.id.substring(0,6).toUpperCase()}</b></td>
+            <td>${c.pesan}</td>
+            <td>${c.hp}</td>
+            <td>${c.status === 'proses' ? `<button class="btn-adm-action" onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td>
+        </tr>`;
+    }).join('');
+});
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
         if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
     });
@@ -556,8 +602,10 @@ function renderSidebar() {
             <div class="nav-item" onclick="showSection('secAdminActivation')">🔑 Aktivasi Reseller</div>
             <div class="nav-item" onclick="showSection('secAdminCatalog')">📦 Kelola Katalog</div>
             <div class="nav-item" onclick="showSection('secAdminRedeem')">🎁 Penukaran Poin</div>
+            <div class="nav-item" onclick="showSection('secAdminReturn')">📥 Returan Masuk</div>
+            <div class="nav-item" onclick="showSection('secAdminComplaint')">📢 Keluhan Masuk</div>
         `;
-    } else {
+    }  else {
         menuItems = `
             <div class="nav-item" onclick="showSection('secResellerDashboard')">📊 Dashboard Reseller</div>
             <div class="nav-item" onclick="showSection('secResellerInbox')">📩 Kotak Masuk <span id="badgeSidebar" style="background:red; color:white; border-radius:50%; padding:2px 6px; font-size:9px; margin-left:5px; display:none;">0</span></div>
