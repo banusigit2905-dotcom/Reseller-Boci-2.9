@@ -24,22 +24,21 @@
                 <button onclick="switchAuth('register')" id="tReg" class="tab-btn">DAFTAR</button>
             </div>
             <form id="loginForm">
-                <div class="input-group">
-                    <input type="email" id="loginEmail" placeholder="Email" required>
-                    <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
-                </div>
-                <div style="text-align: center; margin-bottom: 10px;">
-    <button type="button" onclick="handleResetPassword()" class="btn-reset-pw">Lupa Password / Reset</button>
-</div>
-                <button type="submit" class="btn-primary">MASUK</button>
-            </form>
-            <form id="registerForm" class="hidden">
-                <div class="input-group">
-                    <input type="text" id="regNama" placeholder="Nama Lengkap" required>
-                    <input type="email" id="regEmail" placeholder="Email" required>
-                    <input type="tel" id="regHp" placeholder="No. WhatsApp" required> 
-                    <input type="password" id="regPassword" placeholder="Password" minlength="6" required>
-                </div>
+    <div class="input-group">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Kata Sandi" required>
+    </div>
+    
+    <!-- Tombol Masuk di Atas -->
+    <button type="submit" class="btn-primary">MASUK</button>
+
+    <!-- Tombol Lupa Password di Bawah Tombol Masuk -->
+    <div style="text-align: center; margin-top: 15px;">
+        <button type="button" onclick="handleResetPassword()" class="btn-link-reset">
+            Lupa Password? Reset di sini
+        </button>
+    </div>
+</form>
                 <button type="submit" class="btn-primary">DAFTAR & AKTIVASI</button>
             </form>
         </div>
