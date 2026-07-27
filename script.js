@@ -751,9 +751,23 @@ document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.pre
 
 function logout() { auth.signOut(); }
 function toggleSidebar(f) { document.getElementById("sidebar").classList.toggle("active", f); document.getElementById("sidebarOverlay").classList.toggle("active", f); }
-function switchAuth(m) {
-    document.getElementById("loginForm").classList.toggle("hidden", m==='register'); 
-    document.getElementById("registerForm").classList.toggle("hidden", m==='login');
+function switchAuth(mode) {
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const tabLog = document.getElementById("tLog");
+    const tabReg = document.getElementById("tReg");
+
+    if (mode === 'login') {
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        tabLog.classList.add("active");
+        tabReg.classList.remove("active");
+    } else {
+        loginForm.classList.add("hidden");
+        registerForm.classList.remove("hidden");
+        tabLog.classList.remove("active");
+        tabReg.classList.add("active");
+    }
 }
 function openOrderModal() { document.getElementById("orderModal").classList.remove("hidden"); cart = []; renderCart(); goToStep1(); }
 function closeOrderModal() { document.getElementById("orderModal").classList.add("hidden"); }
