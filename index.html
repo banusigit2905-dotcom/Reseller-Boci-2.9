@@ -76,16 +76,29 @@
                 <!-- DASHBOARD RESELLER -->
 <section id="secResellerDashboard" class="app-section hidden">
     
-    <!-- SECTION KOTAK MASUK USER -->
+<!-- SECTION KOTAK MASUK USER -->
 <section id="secResellerInbox" class="app-section hidden">
     <div class="card card-border">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin:0;">📩 Kotak Masuk</h3>
+            <h3 style="margin:0;">📩 Kotak Masuk Pesan</h3>
             <button onclick="markAllAsRead()" class="btn-secondary" style="font-size: 10px; width: auto; padding: 5px 10px;">Tandai Semua Dibaca</button>
         </div>
-        <div id="inboxList" class="inbox-container">
-            <!-- Pesan akan muncul di sini -->
-            <p style="text-align: center; color: #999;">Tidak ada pesan baru.</p>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>Tgl & Waktu</th>
+                        <th>Judul Pesan</th>
+                        <th>Isi Pesan</th>
+                        <th style="width: 80px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="inboxTableBody">
+                    <!-- Data pesan akan muncul di sini -->
+                </tbody>
+            </table>
         </div>
     </div>
 </section>
