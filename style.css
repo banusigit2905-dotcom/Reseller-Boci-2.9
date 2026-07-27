@@ -335,3 +335,6 @@ td small {
     filter: brightness(0.9);
     transform: scale(1.05);
 }
+<div style="text-align: center; margin-bottom: 10px;">
+    <button type="button" onclick="handleResetPassword()" class="btn-reset-pw">Lupa Password / Reset</button>
+</div>
