@@ -112,29 +112,45 @@ function loadNotifications() {
       .where("userId", "==", currentUser.id)
       .orderBy("createdAt", "desc")
       .onSnapshot(snap => {
-        const inboxList = document.getElementById("inboxList");
+        const tableBody = document.getElementById("inboxTableBody");
         const badgeInbox = document.getElementById("badgeInbox");
         const badgeSidebar = document.getElementById("badgeSidebar");
         
         let unreadCount = 0;
         let html = "";
 
-        snap.forEach(doc => {
+        if (snap.empty) {
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Tidak ada pesan masuk.</td></tr>';
+            if(badgeInbox) badgeInbox.style.display = "none";
+            if(badgeSidebar) badgeSidebar.style.display = "none";
+            return;
+        }
+
+        snap.forEach((doc, index) => {
             const n = doc.data();
             if (!n.isRead) unreadCount++;
             
+            // Format waktu
+            const waktu = n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : 'Baru saja';
+            
+            // Beri warna background berbeda jika belum dibaca
+            const rowStyle = n.isRead ? "" : "background-color: #fff9e6; font-weight: bold;";
+            const statusText = n.isRead ? "<span style='color:gray;'>Dibaca</span>" : "<span style='color:orange;'>Baru</span>";
+
             html += `
-                <div class="inbox-item ${n.isRead ? '' : 'unread'}">
-                    <strong>${n.title}</strong>
-                    <p class="msg-text">${n.text}</p>
-                    <span class="time">${n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID') : 'Baru saja'}</span>
-                </div>
+                <tr style="${rowStyle}">
+                    <td>${index + 1}</td>
+                    <td><small>${waktu}</small></td>
+                    <td>${n.title}</td>
+                    <td style="text-align: left;">${n.text}</td>
+                    <td>${statusText}</td>
+                </tr>
             `;
         });
 
-        if(inboxList) inboxList.innerHTML = html || '<p style="text-align:center; color:#999; padding:20px;">Tidak ada pesan.</p>';
+        tableBody.innerHTML = html;
         
-        // Update Badge
+        // Update Badge di Header & Sidebar
         if(unreadCount > 0) {
             if(badgeInbox) { badgeInbox.innerText = unreadCount; badgeInbox.style.display = "block"; }
             if(badgeSidebar) { badgeSidebar.innerText = unreadCount; badgeSidebar.style.display = "inline-block"; }
