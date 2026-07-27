@@ -184,7 +184,54 @@ document.getElementById("loginForm").onsubmit = (e) => {
     const pass = document.getElementById("loginPassword").value;
     auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Gagal: Email/Pass salah!"));
 };
+async function handleResetPassword() {
+    const email = document.getElementById("loginEmail").value;
 
+    if (!email) {
+        alert("Silakan masukkan email Anda di kolom input terlebih dahulu.");
+        return;
+    }
+
+    try {
+        const userSnapshot = await db.collection("users").where("email", "==", email).get();
+
+        if (userSnapshot.empty) {
+            alert("Email tidak terdaftar sebagai reseller.");
+            return;
+        }
+
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        const userId = userDoc.id;
+
+        const now = new Date();
+        const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+
+        let resetCount = userData.pwResetCount || 0;
+        let lastResetMonth = userData.pwLastResetMonth || "";
+
+        if (lastResetMonth !== monthKey) {
+            resetCount = 0;
+        }
+
+        if (resetCount >= 2) {
+            alert("Maaf, Anda sudah mencapai batas maksimal (2x) ganti password dalam bulan ini.");
+            return;
+        }
+
+        await auth.sendPasswordResetEmail(email);
+
+        await db.collection("users").doc(userId).update({
+            pwResetCount: resetCount + 1,
+            pwLastResetMonth: monthKey
+        });
+
+        alert("Email reset password telah dikirim! Silakan periksa Inbox/Spam email Anda.");
+
+    } catch (error) {
+        alert("Gagal memproses reset: " + error.message);
+    }
+}
 document.getElementById("registerForm").onsubmit = async (e) => {
     e.preventDefault();
     const nama = document.getElementById("regNama").value;
