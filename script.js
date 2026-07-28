@@ -105,7 +105,6 @@ if (currentUser.role === 'reseller' && currentUser.isActive === true && !current
         loadNotifications(); // Memanggil fitur Kotak Masuk
     }
 }
-
 // --- 3. NOTIFICATION / INBOX SYSTEM ---
 function loadNotifications() {
     db.collection("notifications")
@@ -114,12 +113,14 @@ function loadNotifications() {
       .onSnapshot(snap => {
         const tableBody = document.getElementById("inboxTableBody");
         const badgeInbox = document.getElementById("badgeInbox");
+        const badgeSidebar = document.getElementById("badgeSidebar");
         
         let unreadCount = 0;
         let html = "";
 
         if (snap.empty) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Kosong</td></tr>';
+            if(tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Kosong</td></tr>';
+            if(badgeInbox) badgeInbox.style.display = "none";
             return;
         }
 
@@ -129,8 +130,6 @@ function loadNotifications() {
             if (!n.isRead) unreadCount++;
             
             const waktu = n.createdAt ? n.createdAt.toDate().toLocaleString('id-ID') : 'Baru saja';
-            
-            // Logika Tebal/Normal
             const weight = n.isRead ? "normal" : "800"; 
             const color = n.isRead ? "#666" : "#000";
 
@@ -146,14 +145,17 @@ function loadNotifications() {
             `;
         });
 
-        tableBody.innerHTML = html;
+        if(tableBody) tableBody.innerHTML = html;
         if(badgeInbox) {
             badgeInbox.innerText = unreadCount;
             badgeInbox.style.display = unreadCount > 0 ? "block" : "none";
         }
-    }); // <--- Ini penutup onSnapshot
-} // <--- Ini penutup fungsi loadNotifications
-        
+        if(badgeSidebar) {
+            badgeSidebar.innerText = unreadCount;
+            badgeSidebar.style.display = unreadCount > 0 ? "inline-block" : "none";
+        }
+    });
+}
         // Update Badge di Header & Sidebar
         if(unreadCount > 0) {
             if(badgeInbox) { badgeInbox.innerText = unreadCount; badgeInbox.style.display = "block"; }
