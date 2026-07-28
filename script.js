@@ -179,20 +179,21 @@ async function markAllAsRead() {
 
 // --- 4. AUTH FORMS ---
 document.getElementById("loginForm").onsubmit = (e) => {
+    alert("Tombol login ditekan");
+
     e.preventDefault();
+
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
+
     auth.signInWithEmailAndPassword(email, pass)
-.then((cred) => {
-    alert("LOGIN BERHASIL\nUID: " + cred.user.uid);
-})
-.catch((err) => {
-    alert(
-        "Code: " + err.code +
-        "\nMessage: " + err.message
-    );
-});
-    };
+        .then((cred) => {
+            alert("LOGIN BERHASIL");
+        })
+        .catch((err) => {
+            alert(err.code + "\n" + err.message);
+        });
+};
 async function handleResetPassword() {
     const email = document.getElementById("loginEmail").value;
 
