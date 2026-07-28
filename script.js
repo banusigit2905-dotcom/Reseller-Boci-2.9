@@ -156,16 +156,6 @@ function loadNotifications() {
         }
     });
 }
-        // Update Badge di Header & Sidebar
-        if(unreadCount > 0) {
-            if(badgeInbox) { badgeInbox.innerText = unreadCount; badgeInbox.style.display = "block"; }
-            if(badgeSidebar) { badgeSidebar.innerText = unreadCount; badgeSidebar.style.display = "inline-block"; }
-        } else {
-            if(badgeInbox) badgeInbox.style.display = "none";
-            if(badgeSidebar) badgeSidebar.style.display = "none";
-        }
-    }); // <--- Ini kurung penutup yang tidak punya pasangan
-} // <--- Ini kurung penutup yang tidak punya pasangan
 async function markAllAsRead() {
     const batch = db.batch();
     const snap = await db.collection("notifications")
@@ -180,8 +170,6 @@ async function markAllAsRead() {
 
 // --- 4. AUTH FORMS ---
 document.getElementById("loginForm").onsubmit = (e) => {
-    alert("Tombol login ditekan");
-
     e.preventDefault();
 
     const email = document.getElementById("loginEmail").value;
@@ -189,7 +177,7 @@ document.getElementById("loginForm").onsubmit = (e) => {
 
     auth.signInWithEmailAndPassword(email, pass)
         .then((cred) => {
-            alert("LOGIN BERHASIL");
+            // Login berhasil — onAuthStateChanged akan menangani tampilan selanjutnya
         })
         .catch((err) => {
             alert(err.code + "\n" + err.message);
