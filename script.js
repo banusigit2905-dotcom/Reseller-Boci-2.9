@@ -36,6 +36,70 @@ let currentPointsVal = 0;
 let currentRankPage = 0; 
 let allRankings = [];
 
+// --- RUNNING TEXT: NOTIFIKASI AKTIVITAS (USER DAFTAR & TUKAR POIN) ---
+const defaultRunningText = "Selamat Datang di Portal Resmi OKTSHOP17! Nikmati kemudahan bertransaksi dan kumpulkan poin sebanyak-banyaknya untuk ditukarkan dengan VOUCHER PILIHAN. Hubungi admin jika butuh bantuan aktivasi atau bisa hubungi kenomor Whatsapp 0895391637844.";
+let runningTextQueue = [];
+let runningTextBusy = false;
+let activityFeedListenerAttached = false;
+
+// Menampilkan teks baru di running text & mengembalikan durasi animasinya (detik)
+function setRunningText(text) {
+    const el = document.getElementById("runningText");
+    if (!el) return 15;
+    const durationSec = Math.max(10, Math.min(30, text.length * 0.15));
+    el.style.animation = "none";
+    void el.offsetWidth; // paksa reflow supaya animasi restart dari awal
+    el.innerText = text;
+    el.style.animation = `marquee ${durationSec}s linear infinite`;
+    return durationSec;
+}
+
+// Memproses antrian notifikasi satu per satu, lalu kembali ke teks default jika kosong
+function processRunningTextQueue() {
+    if (runningTextBusy) return;
+    if (runningTextQueue.length === 0) {
+        setRunningText(defaultRunningText);
+        return;
+    }
+    runningTextBusy = true;
+    const nextText = runningTextQueue.shift();
+    const durationSec = setRunningText(nextText);
+    setTimeout(() => {
+        runningTextBusy = false;
+        processRunningTextQueue();
+    }, durationSec * 1000);
+}
+
+function pushRunningText(text) {
+    runningTextQueue.push(text);
+    processRunningTextQueue();
+}
+
+// Mendengarkan aktivitas baru (daftar & tukar poin) dari koleksi "activityFeed"
+function initActivityFeed() {
+    if (activityFeedListenerAttached) return;
+    activityFeedListenerAttached = true;
+
+    setRunningText(defaultRunningText);
+
+    let firstLoad = true;
+    db.collection("activityFeed").orderBy("createdAt", "desc").limit(5)
+      .onSnapshot(snap => {
+          if (firstLoad) { firstLoad = false; return; } // lewati data lama saat pertama kali load
+          snap.docChanges().forEach(change => {
+              if (change.type === "added") {
+                  const d = change.doc.data();
+                  if (d.type === "register") {
+                      pushRunningText(`🎉 Selamat datang ${d.nama || "Reseller Baru"}! `);
+                  } else if (d.type === "redeem") {
+                      const poin = d.poin ? d.poin.toLocaleString('id-ID') : "0";
+                      pushRunningText(`🎁 Selamat ${d.nama || "Reseller"} telah berhasil tukar poin ${poin}! `);
+                  }
+              }
+          });
+      }, err => console.log("Info: activityFeed belum bisa diakses -", err.message));
+}
+
 // --- 1. AUTH LISTENER ---
 auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -75,6 +139,7 @@ function initApp() {
 
     renderSidebar();
     syncCatalog();
+    initActivityFeed();
 if (currentUser.role === 'reseller' && currentUser.isActive === true && !currentUser.bonusReceived) {
         // Tambahkan bonus ke database
         db.collection("users").doc(currentUser.id).update({
@@ -190,7 +255,16 @@ async function handleResetPassword() {
         return;
     }
 
+    let userId = null;
+    let resetCount = 0;
+    let monthKey = "";
+
+    // 1. Cek data user & batas reset (2x/bulan). Jika gagal (mis. izin Firestore),
+    //    tetap lanjut kirim email tanpa validasi/limit supaya user tetap terbantu.
     try {
+        const now = new Date();
+        monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+
         const userSnapshot = await db.collection("users").where("email", "==", email).get();
 
         if (userSnapshot.empty) {
@@ -200,34 +274,39 @@ async function handleResetPassword() {
 
         const userDoc = userSnapshot.docs[0];
         const userData = userDoc.data();
-        const userId = userDoc.id;
+        userId = userDoc.id;
 
-        const now = new Date();
-        const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
-
-        let resetCount = userData.pwResetCount || 0;
-        let lastResetMonth = userData.pwLastResetMonth || "";
-
-        if (lastResetMonth !== monthKey) {
-            resetCount = 0;
-        }
+        resetCount = userData.pwResetCount || 0;
+        const lastResetMonth = userData.pwLastResetMonth || "";
+        if (lastResetMonth !== monthKey) resetCount = 0;
 
         if (resetCount >= 2) {
             alert("Maaf, Anda sudah mencapai batas maksimal (2x) ganti password dalam bulan ini.");
             return;
         }
+    } catch (checkErr) {
+        console.log("Gagal memeriksa data user untuk reset password:", checkErr.message);
+    }
 
+    // 2. Kirim email reset password (fitur utama, tidak bergantung pada Firestore)
+    try {
         await auth.sendPasswordResetEmail(email);
-
-        await db.collection("users").doc(userId).update({
-            pwResetCount: resetCount + 1,
-            pwLastResetMonth: monthKey
-        });
-
         alert("Email reset password telah dikirim! Silakan periksa Inbox/Spam email Anda.");
+    } catch (sendErr) {
+        alert("Gagal mengirim email reset: " + sendErr.message);
+        return;
+    }
 
-    } catch (error) {
-        alert("Gagal memproses reset: " + error.message);
+    // 3. Catat jumlah pemakaian reset (opsional, boleh gagal tanpa mengganggu proses di atas)
+    if (userId) {
+        try {
+            await db.collection("users").doc(userId).update({
+                pwResetCount: resetCount + 1,
+                pwLastResetMonth: monthKey
+            });
+        } catch (updateErr) {
+            console.log("Gagal mencatat batas reset password:", updateErr.message);
+        }
     }
 }
 document.getElementById("registerForm").onsubmit = async (e) => {
@@ -244,6 +323,14 @@ document.getElementById("registerForm").onsubmit = async (e) => {
         await db.collection("users").doc(cred.user.uid).set({
             customId, nama, email, hp, role: 'reseller', isActive: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        // Kirim ke running text (activityFeed) - tidak menghentikan proses jika gagal
+        db.collection("activityFeed").add({
+            type: "register",
+            nama,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.log("Gagal update activityFeed:", err.message));
+
         alert("Berhasil! ID: " + customId);
         window.open(`https://wa.me/62895345452412?text=Halo Admin, aktivasi akun ID: ${customId}`, '_blank');
         auth.signOut(); 
@@ -614,15 +701,27 @@ async function updateStat(coll, id) {
         }
 
         if (notifTitle !== "" && targetUser) {
-            // Tambahkan ini sebelum alert "Berhasil!" di pengajuan redeem
-await db.collection("notifications").add({
-    userId: currentUser.id,
-    title: "⏳ Pengajuan Tukar Poin",
-    text: `Pengajuan tukar poin sebesar ${amt.toLocaleString()} poin sedang diproses. Mohon tunggu konfirmasi admin.`,
-    isRead: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-});
+            await db.collection("notifications").add({
+                userId: targetUser,
+                title: notifTitle,
+                text: notifText,
+                isRead: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
+
+        // Catat ke activityFeed khusus untuk tukar poin sukses -> tampil di running text
+        if (coll === 'redemptions') {
+            try {
+                await db.collection("activityFeed").add({
+                    type: "redeem",
+                    nama: data.resellerName || data.namaPenerima || "Reseller",
+                    poin: data.points || 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (feedErr) { console.log("Gagal update activityFeed:", feedErr.message); }
+        }
+
         alert("Berhasil diperbarui & Notifikasi dikirim!");
     } catch (err) { alert("Gagal memperbarui status."); }
 }
