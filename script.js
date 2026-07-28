@@ -182,8 +182,16 @@ document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
-    auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Gagal: Email/Pass salah!"));
-};
+    auth.signInWithEmailAndPassword(email, password)
+.then((userCredential) => {
+    alert("Login berhasil");
+})
+.catch((error) => {
+    alert(
+        "Code: " + error.code +
+        "\n\nMessage: " + error.message
+    );
+});
 async function handleResetPassword() {
     const email = document.getElementById("loginEmail").value;
 
