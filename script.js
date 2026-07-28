@@ -192,6 +192,7 @@ document.getElementById("loginForm").onsubmit = (e) => {
         "\nMessage: " + err.message
     );
 });
+    };
 async function handleResetPassword() {
     const email = document.getElementById("loginEmail").value;
 
