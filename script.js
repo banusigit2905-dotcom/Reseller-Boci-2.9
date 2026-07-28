@@ -349,6 +349,7 @@ db.collection("returns").onSnapshot(snap => {
     const pending = snap.docs.filter(d => d.data().status === 'proses').length;
     if (lastAdminCounts.return !== -1 && pending > lastAdminCounts.return) playAdminTing();
     lastAdminCounts.return = pending;
+    if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = pending;
 
     document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
         const r = d.data();
@@ -368,6 +369,7 @@ db.collection("complaints").onSnapshot(snap => {
     const pending = snap.docs.filter(d => d.data().status === 'proses').length;
     if (lastAdminCounts.complaint !== -1 && pending > lastAdminCounts.complaint) playAdminTing();
     lastAdminCounts.complaint = pending;
+    if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = pending;
 
     document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
         const c = d.data();
@@ -408,22 +410,6 @@ db.collection("complaints").onSnapshot(snap => {
         document.getElementById("badgeOrder").innerText = pendingCount;
         document.getElementById("admQty").innerText = filtered.length;
         document.getElementById("admTotal").innerText = "Rp " + totalUang.toLocaleString();
-    });
-
-    db.collection("returns").onSnapshot(snap => {
-        if(document.getElementById("badgeReturn")) document.getElementById("badgeReturn").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-        document.getElementById("adminReturnTable").innerHTML = snap.docs.map(d => {
-            const r = d.data();
-            return `<tr><td><b>${r.nama}</b></td><td>${r.produk}</td><td>${r.alasan}</td><td>${r.hp}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('returns','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
-    });
-
-    db.collection("complaints").onSnapshot(snap => {
-        if(document.getElementById("badgeComplaint")) document.getElementById("badgeComplaint").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-        document.getElementById("adminCompTable").innerHTML = snap.docs.map(d => {
-            const c = d.data();
-            return `<tr><td><b>${c.nama}</b></td><td>${c.hp}</td><td>${c.pesan}</td><td>${c.status === 'proses' ? `<button onclick="updateStat('complaints','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
-        }).join('');
     });
 
     db.collection("redemptions").onSnapshot(snap => {
