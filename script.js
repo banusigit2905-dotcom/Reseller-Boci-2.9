@@ -44,10 +44,10 @@ auth.onAuthStateChanged(async (user) => {
             if (doc.exists) {
                 const userData = doc.data();
                 if (userData.role !== 'admin' && userData.isActive !== true) {
-                    alert("Akun Anda (" + (userData.customId || 'User') + ") belum aktif.\nSilakan hubungi Admin via WhatsApp untuk aktivasi.");
-                    auth.signOut();
-                    return;
-                }
+    alert("Akun Anda ... belum aktif.");
+    auth.signOut(); // <--- Ini penyebabnya
+    return;
+}
                 currentUser = { id: user.uid, ...userData };
                 initApp();
             } else {
