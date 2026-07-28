@@ -1,9 +1,26 @@
 // --- LOGIKA SUARA ADMIN ---
 const notifSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+notifSound.preload = "auto";
 let lastAdminCounts = { redeem: -1, activation: -1, order: -1, return: -1, complaint: -1 };
+let notifSoundUnlocked = false;
+
+// Browser (terutama Chrome) memblokir audio.play() lewat JS sebelum ada interaksi user di halaman.
+// Fungsi ini "membuka kunci" izin audio dengan memutar sangat singkat lalu menghentikannya,
+// dipicu otomatis pada sentuhan/klik pertama user di halaman manapun.
+function unlockNotifSound() {
+    if (notifSoundUnlocked) return;
+    notifSoundUnlocked = true;
+    notifSound.play().then(() => {
+        notifSound.pause();
+        notifSound.currentTime = 0;
+    }).catch(() => { notifSoundUnlocked = false; });
+}
+document.addEventListener("click", unlockNotifSound, { once: true });
+document.addEventListener("touchstart", unlockNotifSound, { once: true });
 
 function playAdminTing() {
-    notifSound.play().catch(e => console.log("Interaksi user diperlukan untuk suara"));
+    notifSound.currentTime = 0;
+    notifSound.play().catch(e => console.log("Suara notifikasi diblokir browser:", e.message));
 }
 // --- UTILS ---
 function generateOrderId() {
@@ -467,7 +484,10 @@ db.collection("complaints").onSnapshot(snap => {
     }).join('');
 });
     db.collection("users").where("role", "==", "reseller").where("isActive", "==", false).onSnapshot(snap => {
-        if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = snap.size;
+        const pending = snap.size;
+        if (lastAdminCounts.activation !== -1 && pending > lastAdminCounts.activation) playAdminTing();
+        lastAdminCounts.activation = pending;
+        if(document.getElementById("badgeActivation")) document.getElementById("badgeActivation").innerText = pending;
     });
 
     db.collection("orders").onSnapshot(snap => {
@@ -497,14 +517,38 @@ db.collection("complaints").onSnapshot(snap => {
     });
 
     db.collection("redemptions").onSnapshot(snap => {
-        let totalOut = 0;
         document.getElementById("adminRedeemTable").innerHTML = snap.docs.map(d => {
             const r = d.data();
-            if (r.status === 'Selesai') totalOut += (r.points || 0);
             return `<tr><td><b>${r.resellerName}</b></td><td>${r.points.toLocaleString()}</td><td>${r.status === 'proses' ? `<button onclick="updateStat('redemptions','${d.id}')">Selesai</button>` : '✅'}</td></tr>`;
         }).join('');
-        document.getElementById("badgeRedeem").innerText = snap.docs.filter(d => d.data().status === 'proses').length;
-        document.getElementById("admPoin").innerText = totalOut.toLocaleString();
+        const pending = snap.docs.filter(d => d.data().status === 'proses').length;
+        if (lastAdminCounts.redeem !== -1 && pending > lastAdminCounts.redeem) playAdminTing();
+        lastAdminCounts.redeem = pending;
+        document.getElementById("badgeRedeem").innerText = pending;
+    });
+
+    // --- POIN KELUAR (LIABILITAS POIN ADMIN) ---
+    // Setiap poin yang didapat reseller (dari order Selesai + bonus) mengurangi Poin Keluar admin (jadi minus).
+    // Setiap poin yang berhasil ditukar reseller (redemption Selesai) mengembalikan Poin Keluar admin mendekati 0.
+    db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
+        db.collection("orders").where("status", "==", "Selesai").onSnapshot(sOrders => {
+            db.collection("redemptions").where("status", "==", "Selesai").onSnapshot(sRedeems => {
+                let totalEarned = 0;
+                sUsers.docs.forEach(u => {
+                    const bonus = u.data().bonusPoints || 0;
+                    const totalSpending = sOrders.docs
+                        .filter(o => o.data().resellerId === u.id)
+                        .reduce((sum, o) => sum + (o.data().total || 0), 0);
+                    totalEarned += Math.floor(totalSpending / 100) + bonus;
+                });
+
+                let totalRedeemed = 0;
+                sRedeems.docs.forEach(d => { totalRedeemed += (d.data().points || 0); });
+
+                const poinKeluar = totalRedeemed - totalEarned; // negatif = masih ada kewajiban poin ke reseller
+                document.getElementById("admPoin").innerText = poinKeluar.toLocaleString('id-ID');
+            });
+        });
     });
 }
 
