@@ -162,9 +162,8 @@ function loadNotifications() {
             if(badgeInbox) badgeInbox.style.display = "none";
             if(badgeSidebar) badgeSidebar.style.display = "none";
         }
-    });
-}
-
+    }); // <--- Ini kurung penutup yang tidak punya pasangan
+} // <--- Ini kurung penutup yang tidak punya pasangan
 async function markAllAsRead() {
     const batch = db.batch();
     const snap = await db.collection("notifications")
