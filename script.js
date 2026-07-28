@@ -151,8 +151,8 @@ function loadNotifications() {
             badgeInbox.innerText = unreadCount;
             badgeInbox.style.display = unreadCount > 0 ? "block" : "none";
         }
-    });
-}
+    }); // <--- Ini penutup onSnapshot
+} // <--- Ini penutup fungsi loadNotifications
         
         // Update Badge di Header & Sidebar
         if(unreadCount > 0) {
