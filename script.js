@@ -182,14 +182,14 @@ document.getElementById("loginForm").onsubmit = (e) => {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
-    auth.signInWithEmailAndPassword(email, password)
-.then((userCredential) => {
-    alert("Login berhasil");
+    auth.signInWithEmailAndPassword(email, pass)
+.then((cred) => {
+    alert("LOGIN BERHASIL\nUID: " + cred.user.uid);
 })
-.catch((error) => {
+.catch((err) => {
     alert(
-        "Code: " + error.code +
-        "\n\nMessage: " + error.message
+        "Code: " + err.code +
+        "\nMessage: " + err.message
     );
 });
 async function handleResetPassword() {
