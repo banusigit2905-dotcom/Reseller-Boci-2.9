@@ -22,6 +22,71 @@ function playAdminTing() {
     notifSound.currentTime = 0;
     notifSound.play().catch(e => console.log("Suara notifikasi diblokir browser:", e.message));
 }
+
+// --- PRESENCE: LACAK AKUN YANG SEDANG ONLINE ---
+// Setiap akun yang login mengirim "heartbeat" (update lastActive) tiap 25 detik ke koleksi "presence".
+// Dianggap online jika heartbeat terakhir masih dalam 45 detik terakhir.
+let presenceHeartbeatInterval = null;
+const ONLINE_THRESHOLD_MS = 45000;
+
+async function updatePresence() {
+    if (!currentUser) return;
+    try {
+        await db.collection("presence").doc(currentUser.id).set({
+            role: currentUser.role,
+            nama: currentUser.nama,
+            lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (e) { console.log("Gagal update presence:", e.message); }
+}
+
+function startPresenceHeartbeat() {
+    updatePresence(); // kirim langsung sekali saat login
+    if (presenceHeartbeatInterval) clearInterval(presenceHeartbeatInterval);
+    presenceHeartbeatInterval = setInterval(updatePresence, 25000);
+}
+
+function stopPresenceHeartbeat() {
+    if (presenceHeartbeatInterval) clearInterval(presenceHeartbeatInterval);
+    presenceHeartbeatInterval = null;
+    if (currentUser) {
+        db.collection("presence").doc(currentUser.id).delete().catch(() => {});
+    }
+}
+
+// Best-effort: coba hapus presence saat tab/browser ditutup (tidak selalu berhasil, tapi tidak masalah
+// karena heartbeat yang berhenti otomatis membuat akun dianggap offline setelah ONLINE_THRESHOLD_MS).
+window.addEventListener("beforeunload", () => {
+    if (currentUser) {
+        db.collection("presence").doc(currentUser.id).delete().catch(() => {});
+    }
+});
+
+// Hitung & tampilkan jumlah akun ADMIN yang sedang online di dashboard admin
+let adminOnlineCache = [];
+let adminOnlineAttached = false;
+
+function recomputeAdminOnline() {
+    const now = Date.now();
+    const count = adminOnlineCache.filter(p => {
+        if (!p.lastActive || !p.lastActive.toDate) return false;
+        return (now - p.lastActive.toDate().getTime()) < ONLINE_THRESHOLD_MS;
+    }).length;
+    const el = document.getElementById("admOnline");
+    if (el) el.innerText = count;
+}
+
+function initAdminOnlineListener() {
+    if (adminOnlineAttached) return;
+    adminOnlineAttached = true;
+    db.collection("presence").where("role", "==", "admin").onSnapshot(snap => {
+        adminOnlineCache = snap.docs.map(d => d.data());
+        recomputeAdminOnline();
+    }, err => console.error("Gagal memuat data presence admin:", err.message));
+    // Refresh berkala supaya entry yang basi (heartbeat berhenti) ikut ke-exclude
+    // walau tidak ada perubahan snapshot baru dari Firestore.
+    setInterval(recomputeAdminOnline, 15000);
+}
 // --- UTILS ---
 function generateOrderId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -138,6 +203,7 @@ auth.onAuthStateChanged(async (user) => {
             console.error("Error checking user doc:", err);
         }
     } else {
+        stopPresenceHeartbeat();
         document.getElementById("appWrapper").classList.add("hidden");
         document.getElementById("loginScreen").classList.remove("hidden");
     }
@@ -157,6 +223,7 @@ function initApp() {
     renderSidebar();
     syncCatalog();
     initActivityFeed();
+    startPresenceHeartbeat();
 if (currentUser.role === 'reseller' && currentUser.isActive === true && !currentUser.bonusReceived) {
         // Tambahkan bonus ke database
         db.collection("users").doc(currentUser.id).update({
@@ -527,29 +594,56 @@ db.collection("complaints").onSnapshot(snap => {
         document.getElementById("badgeRedeem").innerText = pending;
     });
 
-    // --- POIN KELUAR (LIABILITAS POIN ADMIN) ---
-    // Setiap poin yang didapat reseller (dari order Selesai + bonus) mengurangi Poin Keluar admin (jadi minus).
-    // Setiap poin yang berhasil ditukar reseller (redemption Selesai) mengembalikan Poin Keluar admin mendekati 0.
-    db.collection("users").where("role", "==", "reseller").onSnapshot(sUsers => {
-        db.collection("orders").where("status", "==", "Selesai").onSnapshot(sOrders => {
-            db.collection("redemptions").where("status", "==", "Selesai").onSnapshot(sRedeems => {
-                let totalEarned = 0;
-                sUsers.docs.forEach(u => {
-                    const bonus = u.data().bonusPoints || 0;
-                    const totalSpending = sOrders.docs
-                        .filter(o => o.data().resellerId === u.id)
-                        .reduce((sum, o) => sum + (o.data().total || 0), 0);
-                    totalEarned += Math.floor(totalSpending / 100) + bonus;
-                });
+    initPoinKeluarListener();
+    initAdminOnlineListener();
+}
 
-                let totalRedeemed = 0;
-                sRedeems.docs.forEach(d => { totalRedeemed += (d.data().points || 0); });
+// --- POIN KELUAR (LIABILITAS POIN ADMIN) ---
+// Dipasang SEKALI SAJA (bukan nested di dalam listener lain) agar tidak menumpuk banyak
+// listener Firestore setiap kali loadAdminData() dipanggil ulang (mis. saat reset filter).
+// Setiap poin yang didapat reseller (dari order Selesai + bonus) mengurangi Poin Keluar admin (jadi minus).
+// Setiap poin yang berhasil ditukar reseller (redemption Selesai) mengembalikan Poin Keluar admin mendekati 0.
+let poinKeluarAttached = false;
+let pkUsersCache = [];
+let pkOrdersCache = [];
+let pkRedeemsCache = [];
 
-                const poinKeluar = totalRedeemed - totalEarned; // negatif = masih ada kewajiban poin ke reseller
-                document.getElementById("admPoin").innerText = poinKeluar.toLocaleString('id-ID');
-            });
-        });
+function recomputePoinKeluar() {
+    let totalEarned = 0;
+    pkUsersCache.forEach(u => {
+        const bonus = u.bonusPoints || 0;
+        const totalSpending = pkOrdersCache
+            .filter(o => o.resellerId === u.id)
+            .reduce((sum, o) => sum + (o.total || 0), 0);
+        totalEarned += Math.floor(totalSpending / 100) + bonus;
     });
+
+    let totalRedeemed = 0;
+    pkRedeemsCache.forEach(r => { totalRedeemed += (r.points || 0); });
+
+    const poinKeluar = totalRedeemed - totalEarned; // negatif = masih ada kewajiban poin ke reseller
+    const el = document.getElementById("admPoin");
+    if (el) el.innerText = poinKeluar.toLocaleString('id-ID');
+}
+
+function initPoinKeluarListener() {
+    if (poinKeluarAttached) return;
+    poinKeluarAttached = true;
+
+    db.collection("users").where("role", "==", "reseller").onSnapshot(snap => {
+        pkUsersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        recomputePoinKeluar();
+    }, err => console.error("Poin Keluar - gagal memuat data users:", err.message));
+
+    db.collection("orders").where("status", "==", "Selesai").onSnapshot(snap => {
+        pkOrdersCache = snap.docs.map(d => d.data());
+        recomputePoinKeluar();
+    }, err => console.error("Poin Keluar - gagal memuat data orders:", err.message));
+
+    db.collection("redemptions").where("status", "==", "Selesai").onSnapshot(snap => {
+        pkRedeemsCache = snap.docs.map(d => d.data());
+        recomputePoinKeluar();
+    }, err => console.error("Poin Keluar - gagal memuat data redemptions:", err.message));
 }
 
 function resetAdminOrderFilter() {
@@ -874,7 +968,7 @@ document.getElementById("editProfileForm").onsubmit = async (e) => { e.preventDe
 document.getElementById("resellerReturnForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("returns").add({ resellerId: currentUser.id, nama: currentUser.nama, produk: document.getElementById("retProd").value, alasan: document.getElementById("retReason").value, hp: document.getElementById("retHp").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
 document.getElementById("resellerComplaintForm").onsubmit = async (e) => { e.preventDefault(); await db.collection("complaints").add({ resellerId: currentUser.id, nama: document.getElementById("compNama").value, hp: document.getElementById("compHp").value, pesan: document.getElementById("compText").value, status: "proses", createdAt: firebase.firestore.FieldValue.serverTimestamp() }); alert("Dikirim!"); e.target.reset(); };
 
-function logout() { auth.signOut(); }
+function logout() { stopPresenceHeartbeat(); auth.signOut(); }
 function toggleSidebar(f) { document.getElementById("sidebar").classList.toggle("active", f); document.getElementById("sidebarOverlay").classList.toggle("active", f); }
 function switchAuth(mode) {
     const loginForm = document.getElementById("loginForm");
