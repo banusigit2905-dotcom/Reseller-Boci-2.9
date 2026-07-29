@@ -62,27 +62,64 @@ window.addEventListener("beforeunload", () => {
     }
 });
 
-// Hitung & tampilkan jumlah akun ADMIN yang sedang online di dashboard admin
-let adminOnlineCache = [];
+// Hitung & tampilkan jumlah SEMUA akun (admin + reseller) yang sedang online di dashboard admin
+let allOnlineCache = [];
 let adminOnlineAttached = false;
 
 function recomputeAdminOnline() {
     const now = Date.now();
-    const count = adminOnlineCache.filter(p => {
+    const onlineList = allOnlineCache.filter(p => {
         if (!p.lastActive || !p.lastActive.toDate) return false;
         return (now - p.lastActive.toDate().getTime()) < ONLINE_THRESHOLD_MS;
-    }).length;
+    });
     const el = document.getElementById("admOnline");
-    if (el) el.innerText = count;
+    if (el) el.innerText = onlineList.length;
+
+    // Kalau modal daftar online sedang terbuka, refresh isinya juga secara real-time
+    const modal = document.getElementById("onlineListModal");
+    if (modal && !modal.classList.contains("hidden")) {
+        renderOnlineListBody(onlineList);
+    }
+}
+
+function renderOnlineListBody(onlineList) {
+    const body = document.getElementById("onlineListBody");
+    if (!body) return;
+    if (onlineList.length === 0) {
+        body.innerHTML = `<p style="color:#999;">Tidak ada akun yang online.</p>`;
+        return;
+    }
+    const sorted = [...onlineList].sort((a, b) => (a.role === 'admin' ? -1 : 1) - (b.role === 'admin' ? -1 : 1));
+    body.innerHTML = sorted.map(p => {
+        const roleLabel = p.role === 'admin' ? '👑 Admin' : '🧑‍💼 Reseller';
+        return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+                    <span>${p.nama || 'Tanpa Nama'}</span>
+                    <span style="color:#666; font-size:11px;">${roleLabel}</span>
+                </div>`;
+    }).join('');
+}
+
+function openOnlineListModal() {
+    const now = Date.now();
+    const onlineList = allOnlineCache.filter(p => {
+        if (!p.lastActive || !p.lastActive.toDate) return false;
+        return (now - p.lastActive.toDate().getTime()) < ONLINE_THRESHOLD_MS;
+    });
+    renderOnlineListBody(onlineList);
+    document.getElementById("onlineListModal").classList.remove("hidden");
+}
+
+function closeOnlineListModal() {
+    document.getElementById("onlineListModal").classList.add("hidden");
 }
 
 function initAdminOnlineListener() {
     if (adminOnlineAttached) return;
     adminOnlineAttached = true;
-    db.collection("presence").where("role", "==", "admin").onSnapshot(snap => {
-        adminOnlineCache = snap.docs.map(d => d.data());
+    db.collection("presence").onSnapshot(snap => {
+        allOnlineCache = snap.docs.map(d => d.data());
         recomputeAdminOnline();
-    }, err => console.error("Gagal memuat data presence admin:", err.message));
+    }, err => console.error("Gagal memuat data presence:", err.message));
     // Refresh berkala supaya entry yang basi (heartbeat berhenti) ikut ke-exclude
     // walau tidak ada perubahan snapshot baru dari Firestore.
     setInterval(recomputeAdminOnline, 15000);
@@ -328,7 +365,27 @@ document.getElementById("loginForm").onsubmit = (e) => {
             // Login berhasil — onAuthStateChanged akan menangani tampilan selanjutnya
         })
         .catch((err) => {
-            alert(err.code + "\n" + err.message);
+            let pesan = "Gagal login. Silakan coba lagi.";
+            switch (err.code) {
+                case "auth/invalid-credential":
+                case "auth/wrong-password":
+                case "auth/user-not-found":
+                    pesan = "Email/password kamu salah! Coba lagi!";
+                    break;
+                case "auth/invalid-email":
+                    pesan = "Format email tidak valid.";
+                    break;
+                case "auth/too-many-requests":
+                    pesan = "Terlalu banyak percobaan login gagal. Silakan coba lagi beberapa saat lagi.";
+                    break;
+                case "auth/user-disabled":
+                    pesan = "Akun ini telah dinonaktifkan. Hubungi admin.";
+                    break;
+                case "auth/network-request-failed":
+                    pesan = "Koneksi internet bermasalah. Periksa koneksi Anda dan coba lagi.";
+                    break;
+            }
+            alert(pesan);
         });
 };
 async function handleResetPassword() {
